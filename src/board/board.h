@@ -1,10 +1,13 @@
+#pragma once
+
 #include <string>
 #include <cstdint>
 
 using namespace std;
 
 
-enum Color { BLACK = 0, WHITE = 1 };
+#define BLACK false
+#define WHITE true
 
 
 namespace board {
@@ -18,11 +21,12 @@ struct Board {
 
 void init_hash();
 
-uint64_t get_moves(Board b, Color c);
-int get_frontier(Board b, Color c);
+uint64_t get_moves(Board b, bool c);
+int get_frontier(Board b, bool c);
+int get_stable(Board b, bool c);
 
-Board do_move(Board b, int pos, Color c);
-Board add_piece(Board b, int pos, Color c);
+Board do_move(Board b, int pos, bool c);
+Board add_piece(Board b, int pos, bool c);
 
 string to_str(Board b);
 string to_str(uint64_t mask);

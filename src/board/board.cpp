@@ -15,8 +15,8 @@ void init_hash() {
     srand(1337);
 
     for (auto i = 0; i < 64; ++i) {
-        hash_vals[Color::BLACK][i] = rand();
-        hash_vals[Color::WHITE][i] = rand();
+        hash_vals[BLACK][i] = rand();
+        hash_vals[WHITE][i] = rand();
     }
 }
 
@@ -162,10 +162,10 @@ uint64_t soWeOne(uint64_t gen) {
  *
  * Returns a long representing squares that can be played in.
  */
-uint64_t get_moves(Board b, Color c) {
+uint64_t get_moves(Board b, bool c) {
     uint64_t gen, pro, empty, tmp, moves;
 
-    if (c == Color::BLACK) {
+    if (c == BLACK) {
         gen = b.b;
         pro = b.w;
     } else {
@@ -210,10 +210,10 @@ uint64_t get_moves(Board b, Color c) {
  * Takes the pieces of color c, and shifts in every direction, &-ing with empty
  * pieces.
  */
-int get_frontier(Board b, Color c) {
+int get_frontier(Board b, bool c) {
     uint64_t own, opp, empty, frontier;
 
-    if (c == Color::BLACK) {
+    if (c == BLACK) {
         own = b.b;
         opp = b.w;
     } else {
@@ -237,6 +237,52 @@ int get_frontier(Board b, Color c) {
 }
 
 
+int get_stable(Board b, bool c) {
+    const uint64_t top    = 0xff00000000000000;
+    const uint64_t bottom = 0x00000000000000ff;
+    const uint64_t left   = 0x0101010101010101;
+    const uint64_t right  = 0x8080808080808080;
+
+    uint64_t own, opp, pcs, vert, horiz, diag1, diag2, stable_own, stable_opp;
+
+    if (c == BLACK) {
+        own = b.b;
+        opp = b.w;
+    } else {
+        own = b.w;
+        opp = b.b;
+    }
+
+    pcs = b.b | b.w;
+
+    vert  = nortOccl(bottom & pcs, pcs) & soutOccl(top & pcs, pcs);
+    horiz = eastOccl(left & pcs, pcs) & westOccl(right & pcs, pcs);
+    diag1 = noEaOccl((bottom | left) & pcs, pcs) & soWeOccl((top | right) & pcs, pcs);
+    diag2 = noWeOccl((bottom | right) & pcs, pcs) & soEaOccl((top | left) & pcs, pcs);
+
+    stable_own = (0x8100000000000081 | (vert & horiz & diag1 & diag2)) & own;
+    stable_opp = (0x8100000000000081 | (vert & horiz & diag1 & diag2)) & opp;
+
+    /* Expand the stable areas. */
+    for (int ii = 0; ii < 8; ++ii) {
+        stable_own |= own & (
+            (nortOne(stable_own) | soutOne(stable_own) | vert) &
+            (eastOne(stable_own) | westOne(stable_own) | horiz) &
+            (noEaOne(stable_own) | soWeOne(stable_own) | diag1) &
+            (noWeOne(stable_own) | soEaOne(stable_own) | diag2)
+        );
+        stable_opp |= opp & (
+            (nortOne(stable_opp) | soutOne(stable_opp) | vert) &
+            (eastOne(stable_opp) | westOne(stable_opp) | horiz) &
+            (noEaOne(stable_opp) | soWeOne(stable_opp) | diag1) &
+            (noWeOne(stable_opp) | soEaOne(stable_opp) | diag2)
+        );
+    }
+
+    return popcount(stable_own) - popcount(stable_opp);
+}
+
+
 /*
  * Make-move: Makes a move for color c in position pos, and updates the board's
  * hash. Give -1 as pos for pass.  Gen is a one-hot long representing the added
@@ -245,7 +291,7 @@ int get_frontier(Board b, Color c) {
  * that have the new piece on one side and an existing own piece on the other
  * side.
  */
-Board do_move(Board b, int pos, Color c) {
+Board do_move(Board b, int pos, bool c) {
     uint64_t gen, own, pro, diff;
 
     /* -1 for pass. */
@@ -255,7 +301,7 @@ Board do_move(Board b, int pos, Color c) {
 
     gen = 1L << pos;
 
-    if (c == Color::BLACK) {
+    if (c == BLACK) {
         own = b.b;
         pro = b.w;
 
@@ -281,8 +327,8 @@ Board do_move(Board b, int pos, Color c) {
 }
 
 
-Board add_piece(Board b, int pos, Color c) {
-    if (c == Color::BLACK) {
+Board add_piece(Board b, int pos, bool c) {
+    if (c == BLACK) {
         b.b |= (1L << pos);
     } else {
         b.w |= (1L << pos);
