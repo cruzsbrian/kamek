@@ -6,14 +6,17 @@
 using namespace std;
 
 
-uint16_t Board::hash_vals[2][64];
+namespace board {
 
-void Board::init_hash() {
+
+uint16_t hash_vals[2][64];
+
+void init_hash() {
     srand(1337);
 
     for (auto i = 0; i < 64; ++i) {
-        Board::hash_vals[Color::BLACK][i] = rand();
-        Board::hash_vals[Color::WHITE][i] = rand();
+        hash_vals[Color::BLACK][i] = rand();
+        hash_vals[Color::WHITE][i] = rand();
     }
 }
 
@@ -159,15 +162,15 @@ uint64_t soWeOne(uint64_t gen) {
  *
  * Returns a long representing squares that can be played in.
  */
-uint64_t Board::get_moves(Color c) const {
+uint64_t get_moves(Board b, Color c) {
     uint64_t gen, pro, empty, tmp, moves;
 
     if (c == Color::BLACK) {
-        gen = b;
-        pro = w;
+        gen = b.b;
+        pro = b.w;
     } else {
-        gen = w;
-        pro = b;
+        gen = b.w;
+        pro = b.b;
     }
 
     moves = 0L;
@@ -207,15 +210,15 @@ uint64_t Board::get_moves(Color c) const {
  * Takes the pieces of color c, and shifts in every direction, &-ing with empty
  * pieces.
  */
-int Board::get_frontier(Color c) const {
+int get_frontier(Board b, Color c) {
     uint64_t own, opp, empty, frontier;
 
     if (c == Color::BLACK) {
-        own = b;
-        opp = w;
+        own = b.b;
+        opp = b.w;
     } else {
-        own = w;
-        opp = b;
+        own = b.w;
+        opp = b.b;
     }
 
     empty = ~(own | opp);
@@ -242,26 +245,26 @@ int Board::get_frontier(Color c) const {
  * that have the new piece on one side and an existing own piece on the other
  * side.
  */
-void Board::do_move(int pos, Color c) {
+Board do_move(Board b, int pos, Color c) {
     uint64_t gen, own, pro, diff;
 
     /* -1 for pass. */
     if (pos == -1) {
-        return;
+        return b;
     }
 
     gen = 1L << pos;
 
     if (c == Color::BLACK) {
-        own = b;
-        pro = w;
+        own = b.b;
+        pro = b.w;
 
-        b |= gen;
+        b.b |= gen;
     } else {
-        own = w;
-        pro = b;
+        own = b.w;
+        pro = b.b;
 
-        w |= gen;
+        b.w |= gen;
     }
 
     diff = 0L;
@@ -274,26 +277,26 @@ void Board::do_move(int pos, Color c) {
     diff |= noWeOccl(gen, pro) & soEaOccl(own, pro);
     diff |= soWeOccl(gen, pro) & noEaOccl(own, pro);
 
-    b ^= diff;
-    w ^= diff;
-    hash ^= hash_vals[c][pos];
+    return Board{b.b ^ diff, b.w ^ diff, b.hash ^ hash_vals[c][pos]};
 }
 
 
-void Board::add_piece(int pos, Color c) {
+Board add_piece(Board b, int pos, Color c) {
     if (c == Color::BLACK) {
-        b |= (1L << pos);
+        b.b |= (1L << pos);
     } else {
-        w |= (1L << pos);
+        b.w |= (1L << pos);
     }
 
-    hash ^= hash_vals[c][pos];
+    b.hash ^= hash_vals[c][pos];
+
+    return b;
 }
 
 
 
 
-string Board::to_str() const {
+string to_str(Board b) {
     string ret = "  a b c d e f g h\n";
 
     for (auto i = 0; i < 8; ++i) {
@@ -301,8 +304,8 @@ string Board::to_str() const {
         for (auto j = 0; j < 8; ++j) {
             int pos = (i * 8) + j;
 
-            bool black = (b >> pos) & 1L;
-            bool white = (w >> pos) & 1L;
+            bool black = (b.b >> pos) & 1L;
+            bool white = (b.w >> pos) & 1L;
 
             if (white) {
                 ret += "O ";
@@ -319,15 +322,13 @@ string Board::to_str() const {
 }
 
 
-
-
-string mask_to_str(uint64_t x) {
+string to_str(const uint64_t mask) {
     string ret = "  a b c d e f g h\n";
 
     for (auto i = 0; i < 64; ++i) {
-        if (i % 8 == 0) ret += to_string((i / 8) + 1) + " ";
-        ret += ((x >> i) & 1L) ? "X " : "_ ";
-        if (i % 8 == 7)  ret += "\n"; 
+        if (i % 8 == 0) ret += to_string((i / 8) + 1) + " "; // number for row
+        ret += ((mask >> i) & 1L) ? "X " : "_ ";
+        if (i % 8 == 7)  ret += "\n"; // newline to end row
     }
     ret += "\n";
 
@@ -345,4 +346,7 @@ int popcount(uint64_t x) {
     x = (x & m2) + ((x >> 2) & m2);
     x = (x + (x >> 4)) & m4;
     return (x * h01) >> 56;
+}
+
+
 }

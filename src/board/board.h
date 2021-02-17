@@ -7,25 +7,26 @@ using namespace std;
 enum Color { BLACK = 0, WHITE = 1 };
 
 
-class Board {
-public:
-    static void init_hash();
-    static uint16_t hash_vals[2][64];
+namespace board {
 
-    uint64_t get_moves(Color c) const;
-    int get_frontier(Color c) const;
-
-    void do_move(int pos, Color c);
-    void add_piece(int pos, Color c);
-
-    string to_str() const;
-
-private:
+struct Board {
     uint64_t b = 0L;
     uint64_t w = 0L;
     uint16_t hash = 0;
 };
 
 
-int popcount(const uint64_t x);
-string mask_to_str(uint64_t x);
+void init_hash();
+
+uint64_t get_moves(Board b, Color c);
+int get_frontier(Board b, Color c);
+
+Board do_move(Board b, int pos, Color c);
+Board add_piece(Board b, int pos, Color c);
+
+string to_str(Board b);
+string to_str(uint64_t mask);
+
+int popcount(uint64_t x);
+
+}
