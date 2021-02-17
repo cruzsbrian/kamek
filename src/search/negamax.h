@@ -1,14 +1,14 @@
-#include "search.h"
-#include "../eval/simple.h"
+#include "../game/player.h"
+#include "../eval/eval.h"
 
-class NegamaxSearch : public SearchAlg {
+class NegamaxSearch : public Player {
 public:
-    NegamaxSearch(const Eval &e, int depth);
+    NegamaxSearch(const Eval *e, int depth);
 
     int next_move(board::Board b, bool c, int ms_left);
 
 private:
-    SimpleEval eval;
+    const Eval *eval;
     int max_depth;
 
     int negamax_score(board::Board b, bool c, int alpha, int beta, int depth);

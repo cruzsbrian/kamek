@@ -10,8 +10,8 @@
 using namespace std;
 
 
-NegamaxSearch::NegamaxSearch(const Eval &e, int depth) {
-    /* eval = e; */
+NegamaxSearch::NegamaxSearch(const Eval *e, int depth) {
+    eval = e;
     max_depth = depth;
 }
 
@@ -32,9 +32,9 @@ int NegamaxSearch::next_move(board::Board b, bool c, int ms_left) {
             best_move = m;
             max_score = score;
 
-            cout << "Score for move " << move_to_notation(m) << ": " << score << "\n";
+            /* cout << "Score for move " << move_to_notation(m) << ": " << score << "\n"; */
         } else {
-            cout << "Score for move " << move_to_notation(m) << ": --\n";
+            /* cout << "Score for move " << move_to_notation(m) << ": --\n"; */
         }
     }
 
@@ -44,7 +44,7 @@ int NegamaxSearch::next_move(board::Board b, bool c, int ms_left) {
 
 int NegamaxSearch::negamax_score(board::Board b, bool c, int alpha, int beta, int depth) {
     if (depth == max_depth) {
-        return eval.score(b, c);
+        return eval->score(b, c);
     }
 
     uint64_t move_mask = board::get_moves(b, c);

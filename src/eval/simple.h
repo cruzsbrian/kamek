@@ -1,16 +1,23 @@
-#pragma once 
+#pragma once
 
 #include "eval.h"
 
 
+struct SimpleEvalParams {
+    int w_mobility;
+    int w_frontier;
+    int w_stable;
+    int w_corner;
+    int w_edge;
+    int w_pieces;
+};
+
+
 class SimpleEval : public Eval {
 public:
-    int score(board::Board b, bool c);
+    SimpleEval() {};
+    SimpleEval(SimpleEvalParams p) : params(p) {};
+    int score(board::Board b, bool c) const;
 private:
-    const static int w_mobility = 15;
-    const static int w_frontier = -10;
-    const static int w_stable = 25;
-    const static int w_corner = 25;
-    const static int w_edge = 5;
-    const static int w_pieces = 1;
+    const SimpleEvalParams params = {15, -10, 25, 25, 5, 1};
 };

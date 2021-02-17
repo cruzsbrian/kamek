@@ -7,7 +7,7 @@ const uint64_t m_edge     = 0x3c7e818181817e3c;
 const uint64_t m_other    = 0x003c7e7e7e7e3c00;
 
 
-int SimpleEval::score(board::Board b, bool c) {
+int SimpleEval::score(board::Board b, bool c) const {
     int mobility = board::popcount(board::get_moves(b, c)) - board::popcount(board::get_moves(b, !c));
     int frontier = board::get_frontier(b, c) - board::get_frontier(b, !c);
     int stable = board::get_stable(b, c) - board::get_stable(b, !c);
@@ -25,10 +25,10 @@ int SimpleEval::score(board::Board b, bool c) {
     int edges = board::popcount(own & m_edge) - board::popcount(opp & m_edge);
     int corners = board::popcount(own & m_corner) - board::popcount(opp & m_corner);
 
-    return (mobility * w_mobility)
-        + (frontier * w_frontier)
-        + (stable * w_stable)
-        + (edges * w_edge)
-        + (corners * w_corner)
-        + (pieces * w_pieces);
+    return (mobility * params.w_mobility)
+        + (frontier  * params.w_frontier)
+        + (stable    * params.w_stable)
+        + (edges     * params.w_edge)
+        + (corners   * params.w_corner)
+        + (pieces    * params.w_pieces);
 }
