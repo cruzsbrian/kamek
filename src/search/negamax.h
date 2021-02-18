@@ -3,13 +3,13 @@
 
 class NegamaxSearch : public Player {
 public:
-    NegamaxSearch(const Eval *e, int depth);
+    NegamaxSearch(Eval *e, int depth);
 
     int next_move(board::Board b, bool c, int ms_left);
 
 private:
-    const Eval *eval;
+    Eval *eval;
     int max_depth;
 
-    int negamax_score(board::Board b, bool c, int alpha, int beta, int depth);
+    int negamax_score(board::Board b, bool c, int alpha, int beta, int depth, bool passed, long *n);
 };

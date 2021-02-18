@@ -5,12 +5,28 @@
 
 #include <climits>
 #include <iostream>
+#include <time.h>
 
 
 using namespace std;
 
 
-NegamaxSearch::NegamaxSearch(const Eval *e, int depth) {
+int endgame_score(board::Board b, bool c) {
+    uint64_t own, opp;
+
+    if (c == BLACK) {
+        own = b.b;
+        opp = b.w;
+    } else {
+        own = b.w;
+        opp = b.b;
+    }
+
+    return board::popcount(own) - board::popcount(opp);
+}
+
+
+NegamaxSearch::NegamaxSearch(Eval *e, int depth) {
     eval = e;
     max_depth = depth;
 }
@@ -20,13 +36,16 @@ int NegamaxSearch::next_move(board::Board b, bool c, int ms_left) {
     int max_score = -INT_MAX; // use -INT_MAX so it can be negated without overflow
     int best_move = -1;
 
+    clock_t start = clock();
+    long n_nodes = 0L;
+
     uint64_t move_mask = board::get_moves(b, c);
 
     while (move_mask != 0ULL) {
         int m = __builtin_ctzll(move_mask);
         move_mask &= move_mask - 1;
 
-        int score = -negamax_score(board::do_move(b, m, c), !c, -INT_MAX, -max_score, 0);
+        int score = -negamax_score(board::do_move(b, m, c), !c, -INT_MAX, -max_score, 0, false, &n_nodes);
 
         if (score > max_score) {
             best_move = m;
@@ -38,11 +57,18 @@ int NegamaxSearch::next_move(board::Board b, bool c, int ms_left) {
         }
     }
 
+    clock_t end = clock();
+    float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
+    float nps = (float)n_nodes / time_spent;
+    /* cout << n_nodes << " nodes in " << time_spent << "s @ " << nps << " node/s\n"; */
+
     return best_move;
 }
 
 
-int NegamaxSearch::negamax_score(board::Board b, bool c, int alpha, int beta, int depth) {
+int NegamaxSearch::negamax_score(board::Board b, bool c, int alpha, int beta, int depth, bool passed, long *n) {
+    (*n)++;
+
     if (depth == max_depth) {
         return eval->score(b, c);
     }
@@ -50,14 +76,16 @@ int NegamaxSearch::negamax_score(board::Board b, bool c, int alpha, int beta, in
     uint64_t move_mask = board::get_moves(b, c);
 
     if (move_mask == 0ULL) {
-        return -negamax_score(b, !c, -beta, -alpha, depth + 1);
+        // If the opponent passed, the game is over.
+        if (passed) return endgame_score(b, c);
+        return -negamax_score(b, !c, -beta, -alpha, depth + 1, true, n);
     }
 
     while (move_mask != 0ULL) {
         int m = __builtin_ctzll(move_mask);
         move_mask &= move_mask - 1;
 
-        int score = -negamax_score(board::do_move(b, m, c), !c, -beta, -alpha, depth + 1);
+        int score = -negamax_score(board::do_move(b, m, c), !c, -beta, -alpha, depth + 1, false, n);
         if (score >= beta) return beta;
         if (score > alpha) alpha = score;
     }
