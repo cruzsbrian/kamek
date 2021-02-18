@@ -2,16 +2,11 @@
 
 #include "eval.h"
 
+#define N_PARAMS_SIMPLE 6
 
 struct SimpleEvalParams {
-    int w_mobility;
-    int w_frontier;
-    int w_stable;
-    int w_corner;
-    int w_edge;
-    int w_pieces;
+    int p[N_PARAMS_SIMPLE];
 };
-
 
 class SimpleEval : public Eval {
 public:
@@ -19,5 +14,5 @@ public:
     SimpleEval(SimpleEvalParams p) : params(p) {};
     int score(board::Board b, bool c) const;
 private:
-    const SimpleEvalParams params = {15, -10, 25, 25, 5, 1};
+    const SimpleEvalParams params = {10, -10, 25, 25, 5, 1};
 };
