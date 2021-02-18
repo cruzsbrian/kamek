@@ -10,7 +10,7 @@
 using namespace std;
 
 
-Game::Game(Player *black, Player *white) {
+Game::Game(Player *black, Player *white, bool show_turns) {
     players[BLACK] = black;
     players[WHITE] = white;
 
@@ -18,6 +18,8 @@ Game::Game(Player *black, Player *white) {
     b = board::add_piece(b, 28, BLACK);
     b = board::add_piece(b, 35, BLACK);
     b = board::add_piece(b, 36, WHITE);
+
+    this->show_turns = show_turns;
 }
 
 
@@ -28,7 +30,8 @@ int Game::play() {
     bool prev_pass = false;
 
     while (true) {
-        cout << board::to_str(b) << "\n";
+        if (show_turns)
+            cout << board::to_str(b) << "\n";
 
         Player *p = players[turn];
 
@@ -40,7 +43,8 @@ int Game::play() {
             prev_pass = false;
         }
 
-        cout << "\n" << turns[turn] << ": " << move_to_notation(move) << "\n";
+        if (show_turns)
+            cout << "\n" << turns[turn] << ": " << move_to_notation(move) << "\n";
 
         b = board::do_move(b, move, turn);
 
@@ -59,7 +63,8 @@ int Game::play() {
         score_msg = "Tie";
     }
 
-    cout << score_msg << "\n";
+    if (show_turns)
+        cout << score_msg << "\n";
 
     return (black_score - white_score);
 }
