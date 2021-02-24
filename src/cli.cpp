@@ -4,7 +4,7 @@
 
 #include "eval/simple.h"
 #include "search/negamax.h"
-#include "game/stream_player.h"
+#include "game/human_player.h"
 
 
 int main() {
@@ -14,10 +14,10 @@ int main() {
     SimpleEval *ev2 = new SimpleEval({156, -87, 56, 36, 980, 2});
     NegamaxSearch *cpu2 = new NegamaxSearch(ev2, 8);
 
-    StreamPlayer *human = new StreamPlayer();
+    HumanPlayer *human = new HumanPlayer();
 
-    Game game{cpu2, human, true};
-    game.play();
+    Game game{cpu2, human};
+    game.play(true);
 
     return 0;
 }

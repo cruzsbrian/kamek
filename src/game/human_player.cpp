@@ -1,4 +1,4 @@
-#include "stream_player.h"
+#include "human_player.h"
 
 #include "../util.h"
 
@@ -6,7 +6,7 @@
 #include <string>
 
 
-int StreamPlayer::next_move(board::Board b, bool c, int ms_left) {
+int HumanPlayer::next_move(board::Board b, bool c, int ms_left) {
     uint64_t legal_moves = board::get_moves(b, c);
 
     int move;

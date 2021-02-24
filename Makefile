@@ -17,21 +17,27 @@ COMMON_SRCS = $(addprefix board/, $(BOARD_SRCS)) \
 			  $(addprefix game/, $(GAME_SRCS)) \
 			  $(UTIL_SRCS) \
 
-CLI_SRCS = cli.cpp game/stream_player.cpp
+CLI_SRCS = cli.cpp game/human_player.cpp
+CS2_SRCS = cs2.cpp
 TRAIN_SRCS = train.cpp
 
 COMMON_OBJS = $(COMMON_SRCS:.cpp=.o)
 CLI_OBJS = $(COMMON_OBJS) $(CLI_SRCS:.cpp=.o)
+CS2_OBJS = $(COMMON_OBJS) $(CS2_SRCS:.cpp=.o)
 TRAIN_OBJS = $(COMMON_OBJS) $(TRAIN_SRCS:.cpp=.o)
 
 
-all: cli train
+all: wonky_cli wonky_cs2 wonky_train
 
-cli: $(addprefix $(OBJDIR)/, $(CLI_OBJS))
+wonky_cli: $(addprefix $(OBJDIR)/, $(CLI_OBJS))
 	mkdir -p bin
 	$(CC) $^ $(LDFLAGS) -o $(BINDIR)/$@
 
-train: $(addprefix $(OBJDIR)/, $(TRAIN_OBJS))
+wonky_cs2: $(addprefix $(OBJDIR)/, $(CS2_OBJS))
+	mkdir -p bin
+	$(CC) $^ $(LDFLAGS) -o $(BINDIR)/$@
+
+wonky_train: $(addprefix $(OBJDIR)/, $(TRAIN_OBJS))
 	mkdir -p bin
 	$(CC) $^ $(LDFLAGS) -o $(BINDIR)/$@
 
