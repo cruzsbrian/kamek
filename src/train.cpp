@@ -50,7 +50,7 @@ string to_str(SimpleEvalParams p) {
     string ret = "(";
     for (auto i = 0; i < N_PARAMS_SIMPLE; i++) {
         ret += to_string(p.p[i]);
-        if (i < N_PARAMS_SIMPLE - 1) ret += "; ";
+        if (i < N_PARAMS_SIMPLE - 1) ret += ", ";
     }
     return ret + ")";
 }
@@ -63,10 +63,10 @@ void training_game(SimpleEvalParams base_params, SimpleEvalParams test_params, p
     SimpleEval test_ev{test_params};
     NegamaxSearch test_bot{&test_ev, 4};
 
-    Game game1{&base_bot, &test_bot, false};
-    Game game2{&test_bot, &base_bot, false};
+    Game game1{&base_bot, &test_bot};
+    Game game2{&test_bot, &base_bot};
 
-    int score = (game2.play() - game1.play()) / 2;
+    int score = (game2.play(false) - game1.play(false)) / 2;
     score_prom->set_value(score);
 
     cout << "." << flush;
@@ -76,11 +76,15 @@ void training_game(SimpleEvalParams base_params, SimpleEvalParams test_params, p
 int main() {
     srand(time(NULL));
 
-    const int n_iters = 100;
+    const int n_iters = 400;
     const int n_test_bots = 50;
-    const int tweak_range = 100;
+    const int tweak_range = 50;
 
-    SimpleEvalParams current_best = {207, -41, 327, 28, 917, -52};
+    /* SimpleEvalParams current_best = {180, -140, 755, 189, 585, -9}; */
+    SimpleEvalParams current_best;
+
+    SimpleEval baseline_ev{current_best};
+    NegamaxSearch baseline_bot{&baseline_ev, 5};
 
     for (auto i = 0; i < n_iters; i++) {
         cout << "Current best: " << to_str(current_best) << "\n";
@@ -118,6 +122,15 @@ int main() {
         }
 
         current_best = normalize(current_best);
+
+        // Compare current bot to the starting point
+        /* SimpleEval test_ev{current_best}; */
+        /* NegamaxSearch test_bot{&test_ev, 5}; */
+
+        /* Game game1{&baseline_bot, &test_bot}; */
+        /* Game game2{&test_bot, &baseline_bot}; */
+
+        /* cout << game2.play(false) << "," << -game1.play(false); */
 
         cout << "\n";
     }

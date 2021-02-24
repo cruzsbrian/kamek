@@ -10,7 +10,7 @@
 
 const uint64_t m_corner   = 0x8100000000000081;
 const uint64_t m_c_square = 0x4281000000004281;
-const uint64_t m_edge     = 0x3c7e818181817e3c;
+const uint64_t m_edge     = 0x3c0081818181003c;
 const uint64_t m_other    = 0x003c7e7e7e7e3c00;
 
 

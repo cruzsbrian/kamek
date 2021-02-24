@@ -5,7 +5,7 @@
 #define N_PARAMS_SIMPLE 6
 
 struct SimpleEvalParams {
-    int p[N_PARAMS_SIMPLE];
+    int p[N_PARAMS_SIMPLE] = {0, 0, 0, 0, 0, 0};
 };
 
 class SimpleEval : public Eval {

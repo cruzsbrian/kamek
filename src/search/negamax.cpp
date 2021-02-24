@@ -51,16 +51,16 @@ int NegamaxSearch::next_move(board::Board b, bool c, int ms_left) {
             best_move = m;
             max_score = score;
 
-            /* cout << "Score for move " << move_to_notation(m) << ": " << score << "\n"; */
+            /* cerr << "Score for move " << move_to_notation(m) << ": " << score << "\n"; */
         } else {
-            /* cout << "Score for move " << move_to_notation(m) << ": --\n"; */
+            /* cerr << "Score for move " << move_to_notation(m) << ": --\n"; */
         }
     }
 
     clock_t end = clock();
     float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
     float nps = (float)n_nodes / time_spent;
-    /* cout << n_nodes << " nodes in " << time_spent << "s @ " << nps << " node/s\n"; */
+    /* cerr << n_nodes << " nodes in " << time_spent << "s @ " << nps << " node/s\n"; */
 
     return best_move;
 }
