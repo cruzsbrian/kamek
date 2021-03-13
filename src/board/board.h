@@ -13,19 +13,18 @@ using namespace std;
 namespace board {
 
 struct Board {
-    uint64_t b = 0L;
-    uint64_t w = 0L;
-    uint16_t hash = 0;
+    uint64_t own = 0L;
+    uint64_t opp = 0L;
 };
 
 
 void init_hash();
 
-uint64_t get_moves(Board b, bool c);
-int get_frontier(Board b, bool c);
-int get_stable(Board b, bool c);
+uint64_t get_moves(Board b);
+int get_frontier(Board b);
+int get_stable(Board b);
 
-Board do_move(Board b, int pos, bool c);
+Board do_move(Board b, int pos);
 Board add_piece(Board b, int pos, bool c);
 
 string to_str(Board b);

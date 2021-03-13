@@ -33,7 +33,7 @@ int Game::play(bool display) {
 
         Player *p = players[turn];
 
-        int move = p->next_move(b, turn, -1);
+        int move = p->next_move(b, -1);
         if (move == -1) {
             if (prev_pass) break;
             else prev_pass = true;
@@ -44,13 +44,14 @@ int Game::play(bool display) {
         if (display)
             cout << "\n" << turns[turn] << ": " << move_to_notation(move) << "\n";
 
-        b = board::do_move(b, move, turn);
+        b = board::do_move(b, move);
 
         turn = !turn;
     }
 
-    int black_score = board::popcount(b.b);
-    int white_score = board::popcount(b.w);
+    //TODO might be flipped
+    int black_score = board::popcount(b.own);
+    int white_score = board::popcount(b.opp);
 
     string score_msg;
     if (black_score > white_score) {

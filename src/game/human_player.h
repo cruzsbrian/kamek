@@ -4,5 +4,5 @@
 
 class HumanPlayer : public Player {
 public:
-    int next_move(board::Board b, bool c, int ms_left);
+    int next_move(board::Board b, int ms_left);
 };

@@ -6,8 +6,8 @@
 #include <string>
 
 
-int HumanPlayer::next_move(board::Board b, bool c, int ms_left) {
-    uint64_t legal_moves = board::get_moves(b, c);
+int HumanPlayer::next_move(board::Board b, int ms_left) {
+    uint64_t legal_moves = board::get_moves(b);
 
     int move;
     if (legal_moves == 0ULL) {

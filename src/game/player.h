@@ -5,5 +5,5 @@
 
 class Player {
 public:
-    virtual int next_move(board::Board b, bool c, int ms_left) {return -1;};
+    virtual int next_move(board::Board b, int ms_left) {return -1;};
 };

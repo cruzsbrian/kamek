@@ -4,5 +4,5 @@
 
 class Eval {
 public:
-    virtual int score(board::Board b, bool c) const { return 0; }
+    virtual int score(board::Board b) const { return 0; }
 };

@@ -162,42 +162,34 @@ uint64_t soWeOne(uint64_t gen) {
  *
  * Returns a long representing squares that can be played in.
  */
-uint64_t get_moves(Board b, bool c) {
+uint64_t get_moves(Board b) {
     uint64_t gen, pro, empty, tmp, moves;
 
-    if (c == BLACK) {
-        gen = b.b;
-        pro = b.w;
-    } else {
-        gen = b.w;
-        pro = b.b;
-    }
-
     moves = 0L;
-    empty = ~(gen | pro);
+    empty = ~(b.own | b.opp);
 
-    tmp = soutOccl(gen, pro) & pro;
+    tmp = soutOccl(b.own, b.opp) & b.opp;
     moves |= (tmp >> 8) & empty;
 
-    tmp = nortOccl(gen, pro) & pro;
+    tmp = nortOccl(b.own, b.opp) & b.opp;
     moves |= (tmp << 8) & empty;
 
-    tmp = eastOccl(gen, pro) & pro;
+    tmp = eastOccl(b.own, b.opp) & b.opp;
     moves |= (tmp << 1) & notAFile & empty;
 
-    tmp = westOccl(gen, pro) & pro;
+    tmp = westOccl(b.own, b.opp) & b.opp;
     moves |= (tmp >> 1) & notHFile & empty;
 
-    tmp = noEaOccl(gen, pro) & pro;
+    tmp = noEaOccl(b.own, b.opp) & b.opp;
     moves |= (tmp << 9) & notAFile & empty;
 
-    tmp = soEaOccl(gen, pro) & pro;
+    tmp = soEaOccl(b.own, b.opp) & b.opp;
     moves |= (tmp >> 7) & notAFile & empty;
 
-    tmp = noWeOccl(gen, pro) & pro;
+    tmp = noWeOccl(b.own, b.opp) & b.opp;
     moves |= (tmp << 7) & notHFile & empty;
 
-    tmp = soWeOccl(gen, pro) & pro;
+    tmp = soWeOccl(b.own, b.opp) & b.opp;
     moves |= (tmp >> 9) & notHFile & empty;
 
     return moves;
@@ -210,68 +202,52 @@ uint64_t get_moves(Board b, bool c) {
  * Takes the pieces of color c, and shifts in every direction, &-ing with empty
  * pieces.
  */
-int get_frontier(Board b, bool c) {
-    uint64_t own, opp, empty, frontier;
+int get_frontier(Board b) {
+    uint64_t empty, frontier;
 
-    if (c == BLACK) {
-        own = b.b;
-        opp = b.w;
-    } else {
-        own = b.w;
-        opp = b.b;
-    }
-
-    empty = ~(own | opp);
+    empty = ~(b.own | b.opp);
     frontier = 0L;
 
-    frontier |= (own >> 8) & empty;
-    frontier |= (own << 8) & empty;
-    frontier |= (own << 1) & notAFile & empty;
-    frontier |= (own >> 1) & notHFile & empty;
-    frontier |= (own << 9) & notAFile & empty;
-    frontier |= (own >> 7) & notAFile & empty;
-    frontier |= (own << 7) & notHFile & empty;
-    frontier |= (own >> 9) & notHFile & empty;
+    frontier |= (b.own >> 8) & empty;
+    frontier |= (b.own << 8) & empty;
+    frontier |= (b.own << 1) & notAFile & empty;
+    frontier |= (b.own >> 1) & notHFile & empty;
+    frontier |= (b.own << 9) & notAFile & empty;
+    frontier |= (b.own >> 7) & notAFile & empty;
+    frontier |= (b.own << 7) & notHFile & empty;
+    frontier |= (b.own >> 9) & notHFile & empty;
 
     return popcount(frontier);
 }
 
 
-int get_stable(Board b, bool c) {
+int get_stable(Board b) {
     const uint64_t top    = 0xff00000000000000;
     const uint64_t bottom = 0x00000000000000ff;
     const uint64_t left   = 0x0101010101010101;
     const uint64_t right  = 0x8080808080808080;
 
-    uint64_t own, opp, pcs, vert, horiz, diag1, diag2, stable_own, stable_opp;
+    uint64_t pcs, vert, horiz, diag1, diag2, stable_own, stable_opp;
 
-    if (c == BLACK) {
-        own = b.b;
-        opp = b.w;
-    } else {
-        own = b.w;
-        opp = b.b;
-    }
-
-    pcs = b.b | b.w;
+    pcs = b.own | b.opp;
 
     vert  = nortOccl(bottom & pcs, pcs) & soutOccl(top & pcs, pcs);
     horiz = eastOccl(left & pcs, pcs) & westOccl(right & pcs, pcs);
     diag1 = noEaOccl((bottom | left) & pcs, pcs) & soWeOccl((top | right) & pcs, pcs);
     diag2 = noWeOccl((bottom | right) & pcs, pcs) & soEaOccl((top | left) & pcs, pcs);
 
-    stable_own = (0x8100000000000081 | (vert & horiz & diag1 & diag2)) & own;
-    stable_opp = (0x8100000000000081 | (vert & horiz & diag1 & diag2)) & opp;
+    stable_own = (0x8100000000000081 | (vert & horiz & diag1 & diag2)) & b.own;
+    stable_opp = (0x8100000000000081 | (vert & horiz & diag1 & diag2)) & b.opp;
 
     /* Expand the stable areas. */
     for (int ii = 0; ii < 8; ++ii) {
-        stable_own |= own & (
+        stable_own |= b.own & (
             (nortOne(stable_own) | soutOne(stable_own) | vert) &
             (eastOne(stable_own) | westOne(stable_own) | horiz) &
             (noEaOne(stable_own) | soWeOne(stable_own) | diag1) &
             (noWeOne(stable_own) | soEaOne(stable_own) | diag2)
         );
-        stable_opp |= opp & (
+        stable_opp |= b.opp & (
             (nortOne(stable_opp) | soutOne(stable_opp) | vert) &
             (eastOne(stable_opp) | westOne(stable_opp) | horiz) &
             (noEaOne(stable_opp) | soWeOne(stable_opp) | diag1) &
@@ -291,50 +267,38 @@ int get_stable(Board b, bool c) {
  * that have the new piece on one side and an existing own piece on the other
  * side.
  */
-Board do_move(Board b, int pos, bool c) {
+Board do_move(Board b, int pos) {
     uint64_t gen, own, pro, diff;
 
     /* -1 for pass. */
     if (pos == -1) {
-        return b;
+        return Board{b.opp, b.own};
     }
 
     gen = 1L << pos;
 
-    if (c == BLACK) {
-        own = b.b;
-        pro = b.w;
-
-        b.b |= gen;
-    } else {
-        own = b.w;
-        pro = b.b;
-
-        b.w |= gen;
-    }
-
     diff = 0L;
-    diff |= soutOccl(gen, pro) & nortOccl(own, pro);
-    diff |= nortOccl(gen, pro) & soutOccl(own, pro);
-    diff |= eastOccl(gen, pro) & westOccl(own, pro);
-    diff |= westOccl(gen, pro) & eastOccl(own, pro);
-    diff |= noEaOccl(gen, pro) & soWeOccl(own, pro);
-    diff |= soEaOccl(gen, pro) & noWeOccl(own, pro);
-    diff |= noWeOccl(gen, pro) & soEaOccl(own, pro);
-    diff |= soWeOccl(gen, pro) & noEaOccl(own, pro);
+    diff |= soutOccl(gen, b.opp) & nortOccl(b.own, b.opp);
+    diff |= nortOccl(gen, b.opp) & soutOccl(b.own, b.opp);
+    diff |= eastOccl(gen, b.opp) & westOccl(b.own, b.opp);
+    diff |= westOccl(gen, b.opp) & eastOccl(b.own, b.opp);
+    diff |= noEaOccl(gen, b.opp) & soWeOccl(b.own, b.opp);
+    diff |= soEaOccl(gen, b.opp) & noWeOccl(b.own, b.opp);
+    diff |= noWeOccl(gen, b.opp) & soEaOccl(b.own, b.opp);
+    diff |= soWeOccl(gen, b.opp) & noEaOccl(b.own, b.opp);
 
-    return Board{b.b ^ diff, b.w ^ diff, b.hash ^ hash_vals[c][pos]};
+    return Board{b.opp ^ diff, b.own ^ diff | gen};
 }
 
 
 Board add_piece(Board b, int pos, bool c) {
     if (c == BLACK) {
-        b.b |= (1L << pos);
+        b.own |= (1L << pos);
     } else {
-        b.w |= (1L << pos);
+        b.opp |= (1L << pos);
     }
 
-    b.hash ^= hash_vals[c][pos];
+    /* b.hash ^= hash_vals[c][pos]; */
 
     return b;
 }
@@ -350,8 +314,8 @@ string to_str(Board b) {
         for (auto j = 0; j < 8; ++j) {
             int pos = (i * 8) + j;
 
-            bool black = (b.b >> pos) & 1L;
-            bool white = (b.w >> pos) & 1L;
+            bool black = (b.own >> pos) & 1L;
+            bool white = (b.opp >> pos) & 1L;
 
             if (white) {
                 ret += "O ";
@@ -383,15 +347,16 @@ string to_str(const uint64_t mask) {
 
 
 int popcount(uint64_t x) {
-    const uint64_t m1  = 0x5555555555555555;
-    const uint64_t m2  = 0x3333333333333333;
-    const uint64_t m4  = 0x0f0f0f0f0f0f0f0f;
-    const uint64_t h01 = 0x0101010101010101;
+    /* const uint64_t m1  = 0x5555555555555555; */
+    /* const uint64_t m2  = 0x3333333333333333; */
+    /* const uint64_t m4  = 0x0f0f0f0f0f0f0f0f; */
+    /* const uint64_t h01 = 0x0101010101010101; */
 
-    x -= (x >> 1) & m1;
-    x = (x & m2) + ((x >> 2) & m2);
-    x = (x + (x >> 4)) & m4;
-    return (x * h01) >> 56;
+    /* x -= (x >> 1) & m1; */
+    /* x = (x & m2) + ((x >> 2) & m2); */
+    /* x = (x + (x >> 4)) & m4; */
+    /* return (x * h01) >> 56; */
+    return __builtin_popcountll(x);
 }
 
 

@@ -14,23 +14,16 @@ const uint64_t m_edge     = 0x3c0081818181003c;
 const uint64_t m_other    = 0x003c7e7e7e7e3c00;
 
 
-int SimpleEval::score(board::Board b, bool c) const {
-    uint64_t own, opp;
-    if (c == BLACK) {
-        own = b.b;
-        opp = b.w;
-    } else {
-        own = b.w;
-        opp = b.b;
-    }
+int SimpleEval::score(board::Board b) const {
+    int pieces = board::popcount(b.own & m_other) - board::popcount(b.opp & m_other);
+    int edges = board::popcount(b.own & m_edge) - board::popcount(b.opp & m_edge);
+    int corners = board::popcount(b.own & m_corner) - board::popcount(b.opp & m_corner);
 
-    int pieces = board::popcount(own & m_other) - board::popcount(opp & m_other);
-    int edges = board::popcount(own & m_edge) - board::popcount(opp & m_edge);
-    int corners = board::popcount(own & m_corner) - board::popcount(opp & m_corner);
+    board::Board opp_b{b.opp, b.own};
 
-    int mobility = board::popcount(board::get_moves(b, c)) - board::popcount(board::get_moves(b, !c));
-    int frontier = board::get_frontier(b, c) - board::get_frontier(b, !c);
-    int stable = board::get_stable(b, c) - board::get_stable(b, !c) - corners;
+    int mobility = board::popcount(board::get_moves(b)) - board::popcount(board::get_moves(opp_b));
+    int frontier = board::get_frontier(b) - board::get_frontier(opp_b);
+    int stable = board::get_stable(b) - corners;
 
     int score = (mobility * params.p[W_MOBILITY])
                 + (frontier * params.p[W_FRONTIER])

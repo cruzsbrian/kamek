@@ -12,7 +12,7 @@ class SimpleEval : public Eval {
 public:
     SimpleEval() {};
     SimpleEval(SimpleEvalParams p) : params(p) {};
-    int score(board::Board b, bool c) const;
+    int score(board::Board b) const;
 private:
     const SimpleEvalParams params = {10, -10, 25, 25, 5, 1};
 };
