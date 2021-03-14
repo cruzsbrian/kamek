@@ -11,32 +11,32 @@
 
 
 bool read_cs2_move(int *move, int *ms_left) {
-    int x, y;
+    int row, col;
 
-    cin >> x >> y >> *ms_left;
+    cin >> row >> col >> *ms_left;
 
     if (cin.eof()) {
         return false;
     }
 
-    if (x == -1 && y == -1) *move = -1;
-    else *move = y * 8 + x;
+    if (row == -1 && col == -1) *move = -1;
+    else *move = row * 8 + col;
 
     return true;
 }
 
 void print_cs2_move(int move) {
-    int x, y;
+    int row, col;
 
     if (move == -1) {
-        x = -1;
-        y = -1;
-    } else {
-        x = move % 8;
-        y = move / 8;
+        cout << "pass" << "\n";
+        return;
     }
 
-    cout << x << " " << y << "\n";
+    row = move / 8;
+    col = move % 8;
+
+    cout << row << " " << col << "\n";
 }
 
 
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     }
 
     bool bot_color;
-    if (strcmp(argv[1], "Black") == 0) {
+    if (strcmp(argv[1], "black") == 0) {
         bot_color = BLACK;
     } else {
         bot_color = WHITE;
@@ -67,13 +67,23 @@ int main(int argc, char *argv[]) {
 
     int ms_left;
     int opp_move;
-    while (read_cs2_move(&opp_move, &ms_left)) {
-        b = board::do_move(b, opp_move, !bot_color);
 
-        int bot_move = cpu.next_move(b, bot_color, ms_left);
+    // The first move sent to us is nothing if we're black
+    read_cs2_move(&opp_move, &ms_left);
+
+    if (bot_color != BLACK) {
+        b = board::do_move(b, opp_move);
+    }
+
+    while (true) {
+        int bot_move = cpu.next_move(b, ms_left);
         print_cs2_move(bot_move);
 
-        b = board::do_move(b, bot_move, bot_color);
+        b = board::do_move(b, bot_move);
+        cerr << board::to_str(b) << "\n";
+
+        if (!read_cs2_move(&opp_move, &ms_left)) break;
+        b = board::do_move(b, opp_move);
     }
 
     return 0;
