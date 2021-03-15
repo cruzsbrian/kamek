@@ -1,9 +1,10 @@
 #include "board/board.h"
 
 #include <iostream>
+#include <time.h>
 
 
-int perft(board::Board b, int depth, bool passed) {
+long perft(board::Board b, int depth, bool passed) {
     uint64_t move_mask = board::get_moves(b);
 
     if (depth == 0) return 1;
@@ -25,14 +26,37 @@ int perft(board::Board b, int depth, bool passed) {
 }
 
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        cout << "usage: perft DEPTH\n";
+        exit(1);
+    }
+
+    int depth;
+    try {
+        depth = std::stoi(argv[1]);
+    } catch (const std::exception &) {
+        cout << "Couldn't parse DEPTH as int\n";
+        cout << "usage: perft DEPTH\n";
+        exit(1);
+    }
+
     board::Board b;
     b = board::add_piece(b, 27, WHITE);
     b = board::add_piece(b, 28, BLACK);
     b = board::add_piece(b, 35, BLACK);
     b = board::add_piece(b, 36, WHITE);
 
-    cout << perft(b, 11, false) << "\n";
+    cout << "Counting nodes to depth " << depth << "\n";
+
+    clock_t start = clock();
+    
+    long nodes = perft(b, depth, false);
+
+    clock_t end = clock();
+    float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
+    float nps = (float)nodes / time_spent;
+    cerr << time_spent << "s @ " << nps << " node/s\n";
 
     return 0;
 }

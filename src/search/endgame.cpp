@@ -4,20 +4,17 @@
 #include <iostream>
 #include <climits>
 
+#include "../util.h"
+
 
 namespace endgame {
 
 
 const int DEEP_CUTOFF = 12;
 const int MED_CUTOFF = 7;
-const int KM_WEIGHT_DEEP = 2;
-const int KM_WEIGHT_MED = 1;
 
-struct ScoredMove {
-    int move;
-    int score;
-    board::Board after;
-};
+const int KM_WEIGHT_DEEP = 3;
+const int KM_WEIGHT_MED = 1;
 
 
 int solve(board::Board b, EndgameStats &stats, bool display) {
@@ -96,7 +93,9 @@ int eg_deep(board::Board b, int alpha, int beta, int empties, bool passed, long 
             score = -eg_deep(moves[i].after, -beta, -alpha, empties - 1, false, n);
         }
 
-        if (score >= beta) return beta;
+        if (score >= beta) {
+            return beta;
+        }
         if (score > alpha) {
             alpha = score;
         }
@@ -186,6 +185,7 @@ int eg_shallow(board::Board b, int alpha, int beta, int empties, bool passed, lo
         move_mask &= move_mask - 1;
 
         int score = -eg_shallow(board::do_move(b, m), -beta, -alpha, empties - 1, false, n);
+
         if (score >= beta) return beta;
         if (score > alpha) alpha = score;
     }

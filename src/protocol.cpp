@@ -3,6 +3,7 @@
 #include "util.h"
 
 #include "eval/simple.h"
+#include "search/table.h"
 #include "search/negamax.h"
 
 #include <iostream>
@@ -52,6 +53,8 @@ int main(int argc, char *argv[]) {
     } else {
         bot_color = WHITE;
     }
+
+    board::init_hash();
 
     board::Board b;
     b = board::add_piece(b, 27, WHITE);

@@ -9,15 +9,27 @@ using namespace std;
 namespace board {
 
 
-uint16_t hash_vals[2][64];
+uint16_t hash_vals[16][256];
 
 void init_hash() {
     srand(1337);
 
-    for (auto i = 0; i < 64; ++i) {
-        hash_vals[BLACK][i] = rand();
-        hash_vals[WHITE][i] = rand();
+    for (auto i = 0; i < 16; ++i) {
+        for (auto j = 0; j < 256; ++j)
+            hash_vals[i][j] = rand();
     }
+}
+
+
+uint16_t hash(Board b) {
+    const uint8_t *hash_strings = (const uint8_t *) &b;
+
+    uint16_t hash = 0;
+    for (auto i = 0; i < 16; i++) {
+        hash ^= hash_vals[i][hash_strings[i]];
+    }
+    
+    return hash;
 }
 
 

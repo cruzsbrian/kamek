@@ -3,18 +3,16 @@
 #include <string>
 #include <vector>
 #include <time.h>
+#include <climits>
 
 #include "board/board.h"
 #include "search/endgame.h"
+#include "util.h"
 
 
-const int N_TESTS = 492;
 const bool DISPLAY = false;
+const unsigned PROGRESS_DOTS = 50;
 
-
-template <typename T> int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-}
 
 board::Board create_board(std::string position) {
     board::Board b;
@@ -29,22 +27,19 @@ board::Board create_board(std::string position) {
 }
 
 
+struct ScoredPosition {
+    board::Board board;
+    int score;
+};
+
+
 void runtests(const string &filename) {
     ifstream ffo_file(filename);
 
-    int incorrect = 0;
-
-    float max_time = 0;
-    float min_time = 99999;
-    float total_time = 0;
-    long total_nodes = 0;
-
-    int last_progress = 0;
-
-    for (auto i = 0; i < N_TESTS; i++) {
-        string pos, turn_str, move_sol_str, score_sol_str;
-        ffo_file >> pos >> turn_str >> move_sol_str >> score_sol_str;
-
+    // Collect all the positions from the file
+    vector<ScoredPosition> positions;
+    string pos, turn_str, move_sol_str, score_sol_str;
+    while (ffo_file >> pos >> turn_str >> move_sol_str >> score_sol_str) {
         bool turn = (turn_str == "Black") ? BLACK : WHITE;
         board::Board b = create_board(pos);
         int score_sol = std::stoi(score_sol_str);
@@ -54,28 +49,50 @@ void runtests(const string &filename) {
             score_sol = -score_sol;
         }
 
-        if (DISPLAY) cerr << pos << " " << turn_str << "\n";
+        positions.push_back({b, score_sol});
+    }
+
+
+    cout << "Solving " << positions.size() << " positions\n";
+
+    cout << "0%";
+    for (unsigned i = 0; i < PROGRESS_DOTS - 6; i++) cout << "-";
+    cout << "100%\n";
+
+
+    int incorrect = 0;
+
+    float max_time = 0;
+    float total_time = 0;
+    long total_nodes = 0;
+
+    int last_progress = 0;
+    int n_tests = 0;
+
+    for (auto pos : positions) {
+        if (DISPLAY) cerr << board::to_str(pos.board) << "\n";
 
         endgame::EndgameStats stats;
-        int score = endgame::solve(b, stats, DISPLAY);
+        int score = endgame::solve(pos.board, stats, DISPLAY);
 
         total_time += stats.time_spent;
         total_nodes += stats.nodes;
         if (stats.time_spent > max_time) max_time = stats.time_spent;
-        if (stats.time_spent < min_time) min_time = stats.time_spent;
 
-        cout << stats.time_spent << "\n";
+        /* cout << stats.time_spent << "\n"; */
 
-        if (sgn(score) != sgn(score_sol)) {
-            cerr << pos << " " << turn_str << "\n";
-            cerr << "Incorrect result: score " << score << ", solution " << score_sol << "\n";
+        if (sgn(score) != sgn(pos.score)) {
+            /* cerr << board::to_str(pos.board) << " " << turn_str << "\n"; */
+            /* cerr << "Incorrect result: score " << score << ", solution " << pos.score << "\n"; */
 
             incorrect++;
         }
 
+        n_tests++;
+
         if (DISPLAY) cerr << "\n";
         else {
-            int p = i * 50 / N_TESTS;
+            int p = n_tests * PROGRESS_DOTS / positions.size();
             if (p != last_progress) {
                 cerr << "." << std::flush;
                 last_progress = p;
@@ -88,7 +105,7 @@ void runtests(const string &filename) {
     float nps = (float)total_nodes / total_time;
     cerr << (float)total_nodes << " nodes in " << total_time << "s @ " << nps << " node/s" << "\n";
 
-    float avg_time = total_time / (float)N_TESTS;
+    float avg_time = total_time / (float)positions.size();
     cerr << "Mean time: " << avg_time << "s\n";
     cerr << "Max time: " << max_time << "s\n";
     /* cerr << "Min time: " << min_time << "s\n"; */
@@ -97,24 +114,17 @@ void runtests(const string &filename) {
 }
 
 
-int main() {
-    cout << "13-14 empties\n";
-    cerr << "Starting depth 13-14\n";
-    runtests("ffotest/eg_13_14.txt");
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        cout << "usage: eg_tests positions_file ..." << "\n";
+        exit(1);
+    }
 
-    cout << "\n15-16 empties\n";
-    cerr << "\nStarting depth 15-16\n";
-    runtests("ffotest/eg_15_16.txt");
+    for (int i = 1; i < argc; i++) {
+        cout << "Running " << argv[i] << "\n";
 
-    cout << "\n17-18 empties\n";
-    cerr << "\nStarting depth 17-18\n";
-    runtests("ffotest/eg_17_18.txt");
+        runtests(argv[i]);
 
-    cout << "\n19-20 empties\n";
-    cerr << "\nStarting depth 19-20\n";
-    runtests("ffotest/eg_19_20.txt");
-
-    cout << "\n21-22 empties\n";
-    cerr << "\nStarting depth 21-22\n";
-    runtests("ffotest/eg_21_22.txt");
+        cout << "\n";
+    }
 }

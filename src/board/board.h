@@ -19,6 +19,7 @@ struct Board {
 
 
 void init_hash();
+uint16_t hash(Board b);
 
 uint64_t get_moves(Board b);
 int get_frontier(Board b);
