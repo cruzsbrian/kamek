@@ -4,14 +4,17 @@
 #include <time.h>
 
 
-long perft(board::Board b, int depth, bool passed) {
+long perft(board::Board b, int depth, bool color, bool passed, bool print) {
     uint64_t move_mask = board::get_moves(b);
 
-    if (depth == 0) return 1;
+    if (depth == 0) {
+        if (print) cout << board::to_str(b, color) << "\n";
+        return 1;
+    }
 
     if (move_mask == 0ULL) {
         if (passed) return 1;
-        return perft(board::Board{b.opp, b.own}, depth - 1, true);
+        return perft(board::Board{b.opp, b.own}, depth - 1, !color, true, print);
     }
 
     int nodes = 0;
@@ -19,7 +22,7 @@ long perft(board::Board b, int depth, bool passed) {
         int m = __builtin_ctzll(move_mask);
         move_mask &= move_mask - 1;
 
-        nodes += perft(board::do_move(b, m), depth - 1, false);
+        nodes += perft(board::do_move(b, m), depth - 1, !color, false, print);
     }
 
     return nodes;
@@ -28,7 +31,7 @@ long perft(board::Board b, int depth, bool passed) {
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        cout << "usage: perft DEPTH\n";
+        cerr << "usage: perft DEPTH\n";
         exit(1);
     }
 
@@ -36,8 +39,8 @@ int main(int argc, char *argv[]) {
     try {
         depth = std::stoi(argv[1]);
     } catch (const std::exception &) {
-        cout << "Couldn't parse DEPTH as int\n";
-        cout << "usage: perft DEPTH\n";
+        cerr << "Couldn't parse DEPTH as int\n";
+        cerr << "usage: perft DEPTH\n";
         exit(1);
     }
 
@@ -47,15 +50,16 @@ int main(int argc, char *argv[]) {
     b = board::add_piece(b, 35, BLACK);
     b = board::add_piece(b, 36, WHITE);
 
-    cout << "Counting nodes to depth " << depth << "\n";
+    cerr << "Counting nodes to depth " << depth << "\n";
 
     clock_t start = clock();
     
-    long nodes = perft(b, depth, false);
+    long nodes = perft(b, depth, BLACK, false, true);
 
     clock_t end = clock();
     float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
     float nps = (float)nodes / time_spent;
+    cerr << nodes << " nodes\n";
     cerr << time_spent << "s @ " << nps << " node/s\n";
 
     return 0;
