@@ -1,5 +1,7 @@
 #include "util.h"
 
+#include <cmath>
+
 
 string move_to_notation(int move) {
     if (move == -1) {
@@ -20,4 +22,11 @@ int notation_to_move(const string &input) {
     char col = input[0] - 'a';
 
     return row * 8 + col;
+}
+
+
+float score_to_pts(int score) {
+    /* float adj_score = float(score) / 500.; */
+    /* return 1 / (1 + exp(-adj_score)); */
+    return (float)score / 50.;
 }

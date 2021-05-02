@@ -1,10 +1,7 @@
 #include "board/board.h"
 #include "game/game.h"
+#include "game/cpu.h"
 #include "util.h"
-
-#include "eval/simple.h"
-#include "search/table.h"
-#include "search/negamax.h"
 
 #include <iostream>
 #include <string.h>
@@ -62,9 +59,7 @@ int main(int argc, char *argv[]) {
     b = board::add_piece(b, 35, BLACK);
     b = board::add_piece(b, 36, WHITE);
 
-    /* SimpleEval ev{{306, -124, 743, 100, 548, -158}}; */
-    SimpleEval ev{{158, -81, 725, 145, 648}};
-    NegamaxSearch cpu{&ev, 8};
+    CPU cpu{11, 22};
 
     cout << "Init done.\n";
 
@@ -79,11 +74,13 @@ int main(int argc, char *argv[]) {
     }
 
     while (true) {
+        cerr << board::to_grid(b, bot_color) << "\n";
+
         int bot_move = cpu.next_move(b, ms_left);
+
         print_cs2_move(bot_move);
 
         b = board::do_move(b, bot_move);
-        cerr << board::to_str(b) << "\n";
 
         if (!read_cs2_move(&opp_move, &ms_left)) break;
         b = board::do_move(b, opp_move);

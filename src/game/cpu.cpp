@@ -51,7 +51,7 @@ int CPU::next_move(board::Board b, int ms_left) {
     int best_move;
 
     while (true) {
-        cerr << "Trying aspiration search in (" << win_prob(alpha) << ", " << win_prob(beta) << ")\n";
+        cerr << "Trying aspiration search in (" << score_to_pts(alpha) << ", " << score_to_pts(beta) << ")\n";
         int score = aspiration_search(b, &best_move, alpha, beta, &nodes);
 
         if (score >= beta) {
@@ -133,7 +133,7 @@ int CPU::aspiration_search(board::Board b, int *move_out, int alpha, int beta, l
             best_move = moves[i].move;
             alpha = score;
 
-            cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << win_prob(score) << "\n";
+            cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << score_to_pts(score) << "\n";
         } else {
             cerr << "Score for move " << move_to_notation(moves[i].move) << ": --\n";
         }
