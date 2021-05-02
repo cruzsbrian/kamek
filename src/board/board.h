@@ -28,7 +28,9 @@ int get_stable(Board b);
 Board do_move(Board b, int pos);
 Board add_piece(Board b, int pos, bool c);
 
-string to_str(Board b);
+Board from_str(std::string position);
+string to_grid(Board b, bool color);
+string to_str(Board b, bool color);
 string to_str(uint64_t mask);
 
 int popcount(uint64_t x);

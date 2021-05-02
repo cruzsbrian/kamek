@@ -318,7 +318,20 @@ Board add_piece(Board b, int pos, bool c) {
 
 
 
-string to_str(Board b) {
+Board from_str(std::string position) {
+    board::Board b;
+
+    for (unsigned i = 0; i < position.length(); i++) {
+        auto ch = position[i];
+        if (ch == 'X') b = board::add_piece(b, i, BLACK);
+        else if (ch == 'O') b = board::add_piece(b, i, WHITE);
+    }
+
+    return b;
+}
+
+
+string to_grid(Board b, bool color) {
     string ret = "  a b c d e f g h\n";
 
     for (auto i = 0; i < 8; ++i) {
@@ -338,6 +351,22 @@ string to_str(Board b) {
             }
         }
         ret += "\n";
+    }
+
+    return ret;
+}
+
+
+string to_str(Board b, bool color) {
+    string ret = "";
+
+    for (auto i = 0; i < 64; i++) {
+        bool own = (b.own >> i) & 1L;
+        bool opp = (b.opp >> i) & 1L;
+
+        if (own && color == BLACK || opp && color == WHITE) ret += "X";
+        else if (opp && color == BLACK || own && color == WHITE) ret += "O";
+        else ret += "-";
     }
 
     return ret;
