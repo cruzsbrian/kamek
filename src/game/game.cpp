@@ -21,6 +21,14 @@ Game::Game(Player *black, Player *white) {
 }
 
 
+Game::Game(board::Board start, Player *black, Player *white) {
+    players[BLACK] = black;
+    players[WHITE] = white;
+
+    b = start;
+}
+
+
 const string turns[2] = {"BLACK", "WHITE"};
 
 int Game::play(bool display) {
@@ -29,7 +37,7 @@ int Game::play(bool display) {
 
     while (true) {
         if (display)
-            cout << board::to_str(b) << "\n";
+            cout << board::to_str(b, turn) << "\n";
 
         Player *p = players[turn];
 
@@ -49,21 +57,12 @@ int Game::play(bool display) {
         turn = !turn;
     }
 
-    //TODO might be flipped
-    int black_score = board::popcount(b.own);
-    int white_score = board::popcount(b.opp);
+    int score = board::popcount(b.own) - board::popcount(b.opp);
 
-    string score_msg;
-    if (black_score > white_score) {
-        score_msg = "Black wins (" + to_string(black_score) + "-" + to_string(white_score) + ")";
-    } else if (white_score > black_score) {
-        score_msg = "White wins (" + to_string(white_score) + "-" + to_string(black_score) + ")";
-    } else {
-        score_msg = "Tie";
-    }
+    if (turn == WHITE) score = -score;
 
     if (display)
-        cout << score_msg << "\n";
+        cout << "Score for black: " << score << "\n";
 
-    return (black_score - white_score);
+    return score;
 }
