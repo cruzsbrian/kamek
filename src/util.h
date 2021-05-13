@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "board/board.h"
 
@@ -10,7 +11,9 @@ using namespace std;
 string move_to_notation(int move);
 int notation_to_move(const string &input);
 
-float score_to_pts(int score);
+float win_prob(int score);
+
+vector<int> eval_activations(board::Board board);
 
 
 template <typename T> int sgn(T val) {
@@ -25,8 +28,20 @@ struct ScoredMove {
 };
 
 
-
 struct ScoredPosition {
     board::Board board;
     int score;
+};
+
+
+class ProgressBar {
+public:
+    ProgressBar(long unsigned steps);
+    void start();
+    void step();
+private:
+    const long unsigned PROGRESS_DOTS = 50;
+    long unsigned steps;
+    long unsigned current_val;
+    long unsigned last_progress;
 };

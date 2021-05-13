@@ -4,3 +4,7 @@ data/*
 temp/*
 .DS_Store
 tags
+
+notes.xopp
+
+data/
