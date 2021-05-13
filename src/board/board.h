@@ -30,7 +30,7 @@ Board add_piece(Board b, int pos, bool c);
 
 Board from_str(std::string position);
 string to_grid(Board b, bool color);
-string to_str(Board b, bool color);
+string to_str(Board b);
 string to_str(uint64_t mask);
 
 int popcount(uint64_t x);

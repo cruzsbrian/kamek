@@ -37,7 +37,7 @@ int Game::play(bool display) {
 
     while (true) {
         if (display)
-            cout << board::to_str(b, turn) << "\n";
+            cout << board::to_grid(b, turn) << "\n";
 
         Player *p = players[turn];
 

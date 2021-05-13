@@ -357,16 +357,20 @@ string to_grid(Board b, bool color) {
 }
 
 
-string to_str(Board b, bool color) {
+string to_str(Board b) {
     string ret = "";
 
     for (auto i = 0; i < 64; i++) {
         bool own = (b.own >> i) & 1L;
         bool opp = (b.opp >> i) & 1L;
 
-        if (own && color == BLACK || opp && color == WHITE) ret += "X";
-        else if (opp && color == BLACK || own && color == WHITE) ret += "O";
+        if (own) ret += "X";
+        else if (opp) ret += "O";
         else ret += "-";
+
+        /* if (own && color == BLACK || opp && color == WHITE) ret += "X"; */
+        /* else if (opp && color == BLACK || own && color == WHITE) ret += "O"; */
+        /* else ret += "-"; */
     }
 
     return ret;
