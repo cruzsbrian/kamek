@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -flto -Ofast -lpthread
+CFLAGS = -Wall -flto -Ofast -lpthread -mbmi2 -DPRINT_SEARCH_INFO
 LDFLAGS = -Ofast -lpthread
 
 SRCDIR = src

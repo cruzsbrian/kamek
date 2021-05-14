@@ -49,7 +49,9 @@ int best_move(board::Board b, EndgameStats &stats) {
     uint64_t move_mask = board::get_moves(b);
 
     if (move_mask == 0ULL) {
-        /* cerr << "Must pass\n"; */
+        #ifdef PRINT_SEARCH_INFO
+        cerr << "Must pass\n";
+        #endif
         return -1;
     }
 
@@ -92,7 +94,10 @@ int best_move(board::Board b, EndgameStats &stats) {
 
         // Get score
         int score = -eg_deep(moves[i].after, -1, -max_score, empties - 1, false, &nodes);
-        /* cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << score << "\n"; */
+
+        #ifdef PRINT_SEARCH_INFO
+        cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << score << "\n";
+        #endif
 
         if (score > max_score) {
             max_score = score;

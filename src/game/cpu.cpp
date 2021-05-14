@@ -23,17 +23,23 @@ CPU::CPU(int search_depth, int endgame_depth) {
 int CPU::next_move(board::Board b, int ms_left) {
     int empties = 64 - board::popcount(b.own | b.opp);
 
+    #ifdef PRINT_SEARCH_INFO
     cerr << empties << " empties\n";
+    #endif
 
     if (empties <= endgame_depth) {
+        #ifdef PRINT_SEARCH_INFO
         cerr << "Solving endgame with " << empties << " empties\n";
+        #endif
 
         endgame::EndgameStats stats;
 
         int best_move = endgame::best_move(b, stats);
 
+        #ifdef PRINT_SEARCH_INFO
         float nps = (float)stats.nodes / stats.time_spent;
         cerr << stats.nodes << " nodes in " << stats.time_spent << "s @ " << nps << " node/s\n";
+        #endif
 
         if (best_move != endgame::MOVE_LOSE) {
             return best_move;
@@ -51,7 +57,10 @@ int CPU::next_move(board::Board b, int ms_left) {
     int best_move;
 
     while (true) {
-        cerr << "Trying aspiration search in (" << score_to_pts(alpha) << ", " << score_to_pts(beta) << ")\n";
+        #ifdef PRINT_SEARCH_INFO
+        cerr << "Trying aspiration search in (" << win_prob(alpha) << ", " << win_prob(beta) << ")\n";
+        #endif
+
         int score = aspiration_search(b, &best_move, alpha, beta, &nodes);
 
         if (score >= beta) {
@@ -63,24 +72,30 @@ int CPU::next_move(board::Board b, int ms_left) {
         }
     }
 
+    #ifdef PRINT_SEARCH_INFO
     clock_t end = clock();
     float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
     float nps = (float)nodes / time_spent;
     cerr << nodes << " nodes in " << time_spent << "s @ " << nps << " node/s\n";
+    #endif
 
     return best_move;
 }
 
 
 int CPU::aspiration_search(board::Board b, int *move_out, int alpha, int beta, long *n) {
+    #ifdef PRINT_SEARCH_INFO
     cerr << "Running depth " << search_depth << " search\n";
+    #endif
 
     int best_move = -1;
 
     uint64_t move_mask = board::get_moves(b);
 
     if (move_mask == 0ULL) {
+        #ifdef PRINT_SEARCH_INFO
         cerr << "Must pass\n";
+        #endif
         (*move_out) = -1;
         return 0;
     }
@@ -133,9 +148,11 @@ int CPU::aspiration_search(board::Board b, int *move_out, int alpha, int beta, l
             best_move = moves[i].move;
             alpha = score;
 
-            cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << score_to_pts(score) << "\n";
+#ifdef PRINT_SEARCH_INFO
+            cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << win_prob(score) << "\n";
         } else {
             cerr << "Score for move " << move_to_notation(moves[i].move) << ": --\n";
+#endif
         }
     }
 
