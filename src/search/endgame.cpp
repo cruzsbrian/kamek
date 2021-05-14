@@ -5,7 +5,7 @@
 #include <climits>
 
 #include "../util.h"
-#include "../eval/simple_eval.h"
+#include "../eval/pattern_eval.h"
 
 
 namespace endgame {

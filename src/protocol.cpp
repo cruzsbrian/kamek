@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
     b = board::add_piece(b, 36, WHITE);
 
     CPU cpu{11, 22};
+    /* CPU cpu{7, 20}; */
 
     cout << "Init done.\n";
 

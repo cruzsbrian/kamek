@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "../board/board.h"
-#include "../eval/simple_eval.h"
+#include "../eval/pattern_eval.h"
 #include "../util.h"
 
 
@@ -40,7 +40,8 @@ void eval_boards(string filename) {
     prog.start();
 
     for (auto pos : positions) {
-        vector<int> vals = eval_activations(pos.board);
+        int vals[N_ALL_MASKS];
+        eval::pattern_activations(vals, pos.board);
 
         int empties = 64 - board::popcount(pos.board.own | pos.board.opp);
 

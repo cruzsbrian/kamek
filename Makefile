@@ -7,7 +7,7 @@ OBJDIR = obj
 BINDIR = bin
 
 BOARD_SRCS = board.cpp
-EVAL_SRCS = simple_eval.cpp
+EVAL_SRCS = pattern_eval.cpp
 SEARCH_SRCS = basic.cpp endgame.cpp
 GAME_SRCS = game.cpp cpu.cpp
 UTIL_SRCS = util.cpp
