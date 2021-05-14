@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
 import argparse
 
@@ -45,12 +46,17 @@ def train_block(lines):
     # print(n_trials)
     # print(b)
 
+    scaler = StandardScaler()
+    a_std = scaler.fit_transform(a)
+
     model = LogisticRegression(solver='liblinear', fit_intercept=False)
-    model.fit(a, b)
+    model.fit(a_std, b)
 
-    print("Model score:", model.score(a, b))
+    print("Model score:", model.score(a_std, b))
 
-    return np.rint(model.coef_ * 500), model.score(a, b)
+    coefs_rescaled = model.coef_ / scaler.scale_
+
+    return np.rint(coefs_rescaled * 500), model.score(a, b)
 
     # ainv = np.linalg.pinv(a)
     # result = np.array(np.matmul(ainv, b))
