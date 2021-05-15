@@ -9,27 +9,23 @@ using namespace std;
 namespace board {
 
 
-uint16_t hash_vals[16][256];
 
-void init_hash() {
-    srand(1337);
 
-    for (auto i = 0; i < 16; ++i) {
-        for (auto j = 0; j < 256; ++j)
-            hash_vals[i][j] = rand();
-    }
+Board starting_position() {
+    return Board{0x0000000810000000, 0x0000001008000000};
 }
 
 
-uint16_t hash(Board b) {
-    const uint8_t *hash_strings = (const uint8_t *) &b;
+Board from_str(std::string position) {
+    board::Board b;
 
-    uint16_t hash = 0;
-    for (auto i = 0; i < 16; i++) {
-        hash ^= hash_vals[i][hash_strings[i]];
+    for (unsigned i = 0; i < position.length(); i++) {
+        auto ch = position[i];
+        if (ch == 'X') b = board::add_piece(b, i, PIECE_OWN);
+        else if (ch == 'O') b = board::add_piece(b, i, PIECE_OPP);
     }
-    
-    return hash;
+
+    return b;
 }
 
 
@@ -175,7 +171,7 @@ uint64_t soWeOne(uint64_t gen) {
  * Returns a long representing squares that can be played in.
  */
 uint64_t get_moves(Board b) {
-    uint64_t gen, pro, empty, tmp, moves;
+    uint64_t empty, tmp, moves;
 
     moves = 0L;
     empty = ~(b.own | b.opp);
@@ -280,7 +276,7 @@ int get_stable(Board b) {
  * side.
  */
 Board do_move(Board b, int pos) {
-    uint64_t gen, own, pro, diff;
+    uint64_t gen, diff;
 
     /* -1 for pass. */
     if (pos == -1) {
@@ -299,36 +295,21 @@ Board do_move(Board b, int pos) {
     diff |= noWeOccl(gen, b.opp) & soEaOccl(b.own, b.opp);
     diff |= soWeOccl(gen, b.opp) & noEaOccl(b.own, b.opp);
 
-    return Board{b.opp ^ diff, b.own ^ diff | gen};
+    return Board{b.opp ^ diff, (b.own ^ diff) | gen};
 }
 
 
 Board add_piece(Board b, int pos, bool c) {
-    if (c == BLACK) {
+    if (c == PIECE_OWN) {
         b.own |= (1L << pos);
     } else {
         b.opp |= (1L << pos);
     }
 
-    /* b.hash ^= hash_vals[c][pos]; */
-
     return b;
 }
 
 
-
-
-Board from_str(std::string position) {
-    board::Board b;
-
-    for (unsigned i = 0; i < position.length(); i++) {
-        auto ch = position[i];
-        if (ch == 'X') b = board::add_piece(b, i, BLACK);
-        else if (ch == 'O') b = board::add_piece(b, i, WHITE);
-    }
-
-    return b;
-}
 
 
 string to_grid(Board b, bool color) {
@@ -367,10 +348,6 @@ string to_str(Board b) {
         if (own) ret += "X";
         else if (opp) ret += "O";
         else ret += "-";
-
-        /* if (own && color == BLACK || opp && color == WHITE) ret += "X"; */
-        /* else if (opp && color == BLACK || own && color == WHITE) ret += "O"; */
-        /* else ret += "-"; */
     }
 
     return ret;

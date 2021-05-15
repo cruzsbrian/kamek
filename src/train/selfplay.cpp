@@ -27,30 +27,15 @@ vector<board::Board> parse_file(const string &filename) {
 
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        cerr << "usage: self_play POSITIONS_FILE ...\n";
-        exit(1);
-    }
+    string pos;
+    while (cin >> pos) {
+        board::Board b = board::from_str(pos);
 
-    vector<board::Board> boards;
-    for (int i = 1; i < argc; i++) {
-        auto b = parse_file(argv[i]);
-        boards.insert(boards.end(), b.begin(), b.end());
-    }
-
-    cerr << "Playing " << boards.size() << " positions\n";
-    cerr << "0%";
-    for (unsigned i = 0; i < PROGRESS_DOTS - 6; i++) cerr << "-";
-    cerr << "100%\n";
-
-    int n_tests = 0;
-    int last_progress = 0;
-    for (auto b : boards) {
         vector<string> board_strs;
         vector<bool> turns;
 
         CPU players[2] = { CPU{CPU_DEPTH,0}, CPU{CPU_DEPTH,0} };
-        bool turn = BLACK;
+        bool turn = 0;
         bool prev_pass = false;
 
         // Play the game, recording all boards seen
@@ -69,25 +54,17 @@ int main(int argc, char *argv[]) {
 
         // Find score
         int black_score = board::popcount(b.own) - board::popcount(b.opp);
-        if (turn == WHITE) black_score = -black_score;
+        if (turn == PIECE_OPP) black_score = -black_score;
 
         // Print all the boards with the score
-        for (auto i = 0; i < board_strs.size(); i++) {
+        for (size_t i = 0; i < board_strs.size(); i++) {
             int score_for_player = black_score;
-            if (turns[i] == WHITE) score_for_player = -black_score;
+            if (turns[i] == PIECE_OPP) score_for_player = -black_score;
 
             cout << board_strs[i] << " " << score_for_player << "\n";
         }
 
-        n_tests++;
-        int p = (n_tests * PROGRESS_DOTS) / boards.size();
-        if (p != last_progress) {
-            last_progress = p;
-            cerr << ".";
-        }
     }
-
-    cerr << "\n";
 
     return 0;
 }

@@ -22,11 +22,11 @@ void runtests(const string &filename) {
     vector<ScoredPosition> positions;
     string pos, turn_str, move_sol_str, score_sol_str;
     while (ffo_file >> pos >> turn_str >> move_sol_str >> score_sol_str) {
-        bool turn = (turn_str == "Black" || turn_str == "black") ? BLACK : WHITE;
+        bool turn = (turn_str == "Black" || turn_str == "black") ? PIECE_OWN : PIECE_OPP;
         board::Board b = board::from_str(pos);
         int score_sol = std::stoi(score_sol_str);
 
-        if (turn == WHITE) {
+        if (turn == PIECE_OPP) {
             b = board::Board{b.opp, b.own};
             score_sol = -score_sol;
         }
@@ -52,7 +52,7 @@ void runtests(const string &filename) {
     int n_tests = 0;
 
     for (auto pos : positions) {
-        if (DISPLAY) cerr << board::to_str(pos.board, BLACK) << "\n";
+        if (DISPLAY) cerr << board::to_str(pos.board) << "\n";
 
         endgame::EndgameStats stats;
         int score = endgame::solve(pos.board, stats, DISPLAY);

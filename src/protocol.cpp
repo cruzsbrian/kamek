@@ -8,6 +8,10 @@
 #include <cctype>
 
 
+#define BLACK false
+#define WHITE true
+
+
 bool read_cs2_move(int *move, int *ms_left) {
     int row, col;
 
@@ -51,13 +55,7 @@ int main(int argc, char *argv[]) {
         bot_color = WHITE;
     }
 
-    board::init_hash();
-
-    board::Board b;
-    b = board::add_piece(b, 27, WHITE);
-    b = board::add_piece(b, 28, BLACK);
-    b = board::add_piece(b, 35, BLACK);
-    b = board::add_piece(b, 36, WHITE);
+    board::Board b = board::starting_position();
 
     CPU cpu{11, 22};
     /* CPU cpu{7, 20}; */
@@ -75,6 +73,7 @@ int main(int argc, char *argv[]) {
     }
 
     while (true) {
+        cerr << "\nwonky_kong " << (bot_color ? "white" : "black") << "\n";
         cerr << board::to_grid(b, bot_color) << "\n";
 
         int bot_move = cpu.next_move(b, ms_left);

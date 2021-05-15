@@ -11,19 +11,16 @@ using namespace std;
 
 
 Game::Game(Player *black, Player *white) {
-    players[BLACK] = black;
-    players[WHITE] = white;
+    players[0] = black;
+    players[1] = white;
 
-    b = board::add_piece(b, 27, WHITE);
-    b = board::add_piece(b, 28, BLACK);
-    b = board::add_piece(b, 35, BLACK);
-    b = board::add_piece(b, 36, WHITE);
+    b = board::starting_position();
 }
 
 
 Game::Game(board::Board start, Player *black, Player *white) {
-    players[BLACK] = black;
-    players[WHITE] = white;
+    players[0] = black;
+    players[1] = white;
 
     b = start;
 }
@@ -32,7 +29,7 @@ Game::Game(board::Board start, Player *black, Player *white) {
 const string turns[2] = {"BLACK", "WHITE"};
 
 int Game::play(bool display) {
-    bool turn = BLACK;
+    bool turn = 0;
     bool prev_pass = false;
 
     while (true) {
@@ -59,7 +56,7 @@ int Game::play(bool display) {
 
     int score = board::popcount(b.own) - board::popcount(b.opp);
 
-    if (turn == WHITE) score = -score;
+    if (turn == 1) score = -score;
 
     if (display)
         cout << "Score for black: " << score << "\n";
