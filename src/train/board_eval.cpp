@@ -40,15 +40,27 @@ void eval_boards(string filename) {
     prog.start();
 
     for (auto pos : positions) {
-        int vals[N_ALL_MASKS];
-        eval::pattern_activations(vals, pos.board);
+        // Get all vals, then rotate 180 deg to get all vals in opposite direction
+        int vals1[N_ALL_MASKS];
+        int vals2[N_ALL_MASKS];
+        eval::pattern_activations(vals1, pos.board);
+
+        board::Board reversed = {eval::flip_horiz(eval::flip_vert(pos.board.own)),
+                                 eval::flip_horiz(eval::flip_vert(pos.board.opp))};
+        eval::pattern_activations(vals2, reversed);
+
+        /* cout << board::to_grid(pos.board, PIECE_OWN); */
+        /* cout << board::to_grid(reversed, PIECE_OWN); */
 
         int empties = 64 - board::popcount(pos.board.own | pos.board.opp);
 
         cout << empties << " ";
-        for (auto v : vals) {
+        for (auto v : vals1) {
             cout << v << " ";
         }
+        /* for (auto v : vals2) { */
+        /*     cout << v << " "; */
+        /* } */
         cout << pos.score << "\n";
 
         prog.step();

@@ -46,11 +46,13 @@ def train(filename):
 
         for j in range(len(line_data) - 2):
             instance = line_data[j + 1]
-            base = MASK_BASE[j]
-            start_pos = START_POS[base]
 
-            indices.append(start_pos + instance)
-            data.append(1)
+            if instance != 0:  # only make weights for non-empty instances
+                base = MASK_BASE[j]
+                start_pos = START_POS[base]
+
+                indices.append(start_pos + instance)
+                data.append(1)
 
         scores.append(score_to_winloss(line_data[-1]))
 
@@ -68,14 +70,14 @@ def train(filename):
     a_std = scaler.fit_transform(a)
 
     print("Fitting...")
-    model = LogisticRegression(solver='saga', fit_intercept=False)
+    model = LogisticRegression(solver='saga', fit_intercept=True)
     model.fit(a_std, b)
 
     print("Model score:", model.score(a_std, b))
 
     coefs_rescaled = model.coef_ / scaler.scale_
 
-    return np.rint(coefs_rescaled * 500)
+    return np.rint(coefs_rescaled * 500), model.intercept_
 
 
 if __name__ == "__main__":
@@ -84,16 +86,18 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    weights = train(args.filename)[0]
+    weights, intercept = train(args.filename)
 
     print(weights)
     print("max:", np.max(weights))
     print("min:", np.min(weights))
 
+    print("intercept:", intercept)
+
     print("Writing weights to file...")
     with open("weights.txt", "w") as outfile:
         n = 0
-        for w in weights:
+        for w in weights[0]:
             outfile.write(str(int(w)))
             n += 1
             if n % 16 == 0:
