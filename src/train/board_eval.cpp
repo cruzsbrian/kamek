@@ -58,9 +58,9 @@ void eval_boards(string filename) {
         for (auto v : vals1) {
             cout << v << " ";
         }
-        /* for (auto v : vals2) { */
-        /*     cout << v << " "; */
-        /* } */
+        for (auto v : vals2) {
+            cout << v << " ";
+        }
         cout << pos.score << "\n";
 
         prog.step();

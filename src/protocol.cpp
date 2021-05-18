@@ -73,12 +73,6 @@ int main(int argc, char *argv[]) {
     }
 
     while (true) {
-        cerr << "\n===================|   WONKY_KONG [" 
-             << (bot_color ? "white" : "black") 
-             << "]   |===================\n";
-        cerr << board::to_grid(b, bot_color) << "\n";
-        cerr << board::to_str(b) << "\n";
-
         int bot_move = cpu.next_move(b, ms_left);
 
         print_cs2_move(bot_move);

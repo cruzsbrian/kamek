@@ -24,6 +24,10 @@ int CPU::next_move(board::Board b, int ms_left) {
     int empties = 64 - board::popcount(b.own | b.opp);
 
     #ifdef PRINT_SEARCH_INFO
+    cerr << "\n=======================|   WONKY_KONG   |=======================\n";
+    /* cerr << board::to_grid(b, PIECE_OWN) << "\n"; */
+    cerr << board::to_str(b) << "\n";
+
     cerr << empties << " empties\n";
     #endif
 
@@ -49,6 +53,7 @@ int CPU::next_move(board::Board b, int ms_left) {
     long nodes = 0L;
     clock_t start = clock();
 
+    // Lower depth search to set aspiration window
     int asp_depth = max(search_depth - ASP_DEPTH_DELTA, 0);
     int asp_score = ab_ff(b, -INT_MAX, INT_MAX, asp_depth, false, &nodes);
     int alpha = asp_score - ASP_WINDOW;
@@ -56,18 +61,16 @@ int CPU::next_move(board::Board b, int ms_left) {
 
     int best_move;
 
+    // Loop until search succeeds
     while (true) {
-        #ifdef PRINT_SEARCH_INFO
-        cerr << "Trying aspiration search in (" << win_prob(alpha) << ", " << win_prob(beta) << ")\n";
-        #endif
-
+        // Try search in current window
         int score = aspiration_search(b, &best_move, alpha, beta, &nodes);
 
-        if (score >= beta) {
+        if (score >= beta) { // Fail-high: increase beta
             beta = beta + ASP_WINDOW * 2;
-        } else if (score <= alpha) {
+        } else if (score <= alpha) { // Fail-low: decrease alpha
             alpha = alpha - ASP_WINDOW * 2;
-        } else {
+        } else { // alpha < score < beta: success
             break;
         }
     }
@@ -85,6 +88,7 @@ int CPU::next_move(board::Board b, int ms_left) {
 
 int CPU::aspiration_search(board::Board b, int *move_out, int alpha, int beta, long *n) {
     #ifdef PRINT_SEARCH_INFO
+    cerr << "Trying aspiration search in (" << win_prob(alpha) << ", " << win_prob(beta) << ")\n";
     cerr << "Running depth " << search_depth << " search\n";
     #endif
 

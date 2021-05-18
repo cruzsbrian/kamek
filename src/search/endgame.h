@@ -5,8 +5,8 @@ namespace endgame {
 const int MOVE_LOSE = 255;
 
 struct EndgameStats {
-    long nodes;
-    float time_spent;
+    long nodes = 0L;
+    float time_spent = 0.;
 };
 
 int solve(board::Board b, EndgameStats &stats, bool display);
