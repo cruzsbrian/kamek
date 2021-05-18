@@ -37,7 +37,7 @@ N_INSTANCES = [ 81, 243, 729, 2187, 6561, 6561, 6561, 6561, 6561 ]
 START_POS = [sum(N_INSTANCES[:i]) for i in range(len(N_INSTANCES))]
 
 
-MAX_TRIALS = int(2e6)
+MAX_TRIALS = int(3e6)
 
 
 def train(filename):

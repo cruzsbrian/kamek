@@ -38,7 +38,7 @@ int ab(board::Board b, int alpha, int beta, int depth, bool passed, long *n) {
 }
 
 
-int ab_ff(board::Board b, int alpha, int beta, int depth, bool passed, long *n) {
+int ab_deep(board::Board b, int alpha, int beta, int depth, bool passed, long *n) {
     (*n)++;
 
     if (depth == 0) {
@@ -49,7 +49,7 @@ int ab_ff(board::Board b, int alpha, int beta, int depth, bool passed, long *n) 
 
     if (move_mask == 0ULL) {
         if (passed) return (board::popcount(b.own) - board::popcount(b.opp)) * 50;
-        return -ab_ff(board::Board{b.opp, b.own}, -beta, -alpha, depth, true, n);
+        return -ab_deep(board::Board{b.opp, b.own}, -beta, -alpha, depth, true, n);
     }
 
     // Get all moves, boards, and opponent mobilities in arrays for sorting
@@ -96,7 +96,7 @@ int ab_ff(board::Board b, int alpha, int beta, int depth, bool passed, long *n) 
         if (depth <= FF_CUTOFF) {
             score = -ab(moves[i].after, -beta, -alpha, depth - 1, false, n);
         } else {
-            score = -ab_ff(moves[i].after, -beta, -alpha, depth - 1, false, n);
+            score = -ab_deep(moves[i].after, -beta, -alpha, depth - 1, false, n);
         }
 
         if (score >= beta) return beta;

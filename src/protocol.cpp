@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     board::Board b = board::starting_position();
 
     CPU cpu{12, 22};
-    /* CPU cpu{10, 20}; */
+    /* CPU cpu{8, 20}; */
 
     cout << "Init done.\n";
 

@@ -25,7 +25,6 @@ int CPU::next_move(board::Board b, int ms_left) {
 
     #ifdef PRINT_SEARCH_INFO
     cerr << "\n=======================|   WONKY_KONG   |=======================\n";
-    /* cerr << board::to_grid(b, PIECE_OWN) << "\n"; */
     cerr << board::to_str(b) << "\n";
 
     cerr << empties << " empties\n";
@@ -55,7 +54,7 @@ int CPU::next_move(board::Board b, int ms_left) {
 
     // Lower depth search to set aspiration window
     int asp_depth = max(search_depth - ASP_DEPTH_DELTA, 0);
-    int asp_score = ab_ff(b, -INT_MAX, INT_MAX, asp_depth, false, &nodes);
+    int asp_score = ab_deep(b, -INT_MAX, INT_MAX, asp_depth, false, &nodes);
     int alpha = asp_score - ASP_WINDOW;
     int beta = asp_score + ASP_WINDOW;
 
@@ -117,7 +116,7 @@ int CPU::aspiration_search(board::Board b, int *move_out, int alpha, int beta, l
         /* if (m == 0 || m == 7 || m == 56 || m == 63) opp_moves -= KM_WEIGHT_MED; */
         /* int score = eval::score(after); */
         int sort_depth = max(search_depth - 4, 0);
-        int score = ab_ff(after, -beta, -alpha, sort_depth, false, n);
+        int score = ab_deep(after, -beta, -alpha, sort_depth, false, n);
 
         moves[n_moves] = ScoredMove{m, score, after};
         n_moves++;
@@ -142,7 +141,7 @@ int CPU::aspiration_search(board::Board b, int *move_out, int alpha, int beta, l
             moves[best_idx] = tmp;
         }
 
-        int score = -ab_ff(moves[i].after, -beta, -alpha, search_depth, false, n);
+        int score = -ab_deep(moves[i].after, -beta, -alpha, search_depth, false, n);
 
         if (score >= beta) {
             return beta;

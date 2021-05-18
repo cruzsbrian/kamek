@@ -44,8 +44,8 @@ void runtests(const string &filename) {
     long nodes;
 
     for (auto pos : positions) {
-        cout << ab_ff(pos.board, -INT_MAX, INT_MAX, 4, false, &nodes) << " ";
-        cout << ab_ff(pos.board, -INT_MAX, INT_MAX, 8, false, &nodes) << "\n";
+        cout << ab_deep(pos.board, -INT_MAX, INT_MAX, 4, false, &nodes) << " ";
+        cout << ab_deep(pos.board, -INT_MAX, INT_MAX, 8, false, &nodes) << "\n";
 
         n_tests++;
         int p = n_tests * PROGRESS_DOTS / positions.size();

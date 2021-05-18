@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         CPU cpu{i, 0};
         long nodes;
 
-        int score = ab_ff(b, -INT_MAX, INT_MAX, i, false, &nodes);
+        int score = ab_deep(b, -INT_MAX, INT_MAX, i, false, &nodes);
         cout << "depth " << i << ": " << win_prob(score) << "\n";
 
         score_sum += score;
