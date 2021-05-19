@@ -3,9 +3,9 @@
 #include "game/cpu.h"
 
 
-int main() {
+int main(int argc, char *argv[]) {
     HumanPlayer human;
-    CPU cpu{12,22};
+    CPU cpu{13,22};
 
     Game game{&human, &cpu};
     game.play(true);

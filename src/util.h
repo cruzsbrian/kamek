@@ -21,6 +21,20 @@ template <typename T> int sgn(T val) {
 }
 
 
+// Node types:
+// PV: principal variation, score is exact
+// HIGH: search failed high, score is lower bound
+// LOW: search failed low, score is upper bound
+enum NodeType { PV, HIGH, LOW };
+
+struct SearchNode {
+    int depth;
+    NodeType type;
+    int score;
+    int best_move;
+};
+
+
 struct ScoredMove {
     int move;
     int score;

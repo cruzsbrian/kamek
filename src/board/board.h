@@ -17,6 +17,8 @@ struct Board {
     uint64_t opp = 0L;
 };
 
+bool operator==(Board b1, Board b2);
+
 Board starting_position();
 Board from_str(std::string position);
 

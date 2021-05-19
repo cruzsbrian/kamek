@@ -5,7 +5,7 @@
 #include <climits>
 
 #include "board/board.h"
-#include "search/basic.h"
+#include "search/alphabeta.h"
 #include "util.h"
 
 

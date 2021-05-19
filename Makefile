@@ -8,7 +8,7 @@ BINDIR = bin
 
 BOARD_SRCS = board.cpp
 EVAL_SRCS = pattern_eval.cpp
-SEARCH_SRCS = basic.cpp endgame.cpp
+SEARCH_SRCS = alphabeta.cpp endgame.cpp hashtable.cpp
 GAME_SRCS = game.cpp cpu.cpp
 UTIL_SRCS = util.cpp
 COMMON_SRCS = $(addprefix board/, $(BOARD_SRCS)) \

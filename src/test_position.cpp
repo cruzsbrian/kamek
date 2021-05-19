@@ -4,7 +4,7 @@
 
 #include "board/board.h"
 #include "eval/simple_eval.h"
-#include "search/basic.h"
+#include "search/alphabeta.h"
 #include "game/cpu.h"
 #include "util.h"
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         CPU cpu{i, 0};
         long nodes;
 
-        int score = ab_deep(b, -INT_MAX, INT_MAX, i, false, &nodes);
+        int score = ab_deep(b, -INT_MAX, INT_MAX, i, false, &nodes).score;
         cout << "depth " << i << ": " << win_prob(score) << "\n";
 
         score_sum += score;

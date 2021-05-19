@@ -11,6 +11,11 @@ namespace board {
 
 
 
+bool operator==(Board b1, Board b2) {
+    return (b1.own == b2.own) && (b1.opp == b2.opp);
+}
+
+
 Board starting_position() {
     return Board{0x0000000810000000, 0x0000001008000000};
 }
