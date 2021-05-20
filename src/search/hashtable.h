@@ -4,8 +4,8 @@
 #include "../util.h"
 
 
-#define N_SLOTS 0x100000
-#define MAX_HASH 0xfffff
+#define N_SLOTS 0x10000
+#define MAX_HASH 0xffff
 
 
 struct TableNode {
@@ -15,11 +15,13 @@ struct TableNode {
 
 class HashTable {
 public:
-    TableNode *get(board::Board key);
+    HashTable();
+    ~HashTable();
+    SearchNode *get(board::Board key);
     void set(board::Board key, SearchNode val);
-private:
     size_t hash(board::Board b);
-
+private:
     std::hash<uint64_t> hash_obj;
-    TableNode slots[N_SLOTS];
+    TableNode *slots;
+    uint32_t **zobrist_table;
 };
