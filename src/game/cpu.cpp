@@ -6,12 +6,14 @@
 #include "../util.h"
 
 #include <iostream>
+#include <fmt/core.h>
 #include <climits>
 #include <time.h>
 
 
-const int ASP_DEPTH_DELTA = 2;
+/* const int ASP_DEPTH_DELTA = 2; */
 const int ASP_WINDOW = 75;
+const float TIME_BUDGET = 15.;
 
 
 CPU::CPU(int search_depth, int endgame_depth) {
@@ -49,47 +51,66 @@ int CPU::next_move(board::Board b, int ms_left) {
         }
     }
 
-    #ifdef PRINT_SEARCH_INFO
-    cerr << "Running depth " << search_depth << " search\n";
-    #endif
-
     long nodes = 0L;
     clock_t start = clock();
 
-    // Lower depth search to set aspiration window
-    int asp_depth = max(search_depth - ASP_DEPTH_DELTA, 0);
-    int asp_score = ab_deep(b, -INT_MAX, INT_MAX, asp_depth, false, &nodes).score;
-    int alpha = asp_score - ASP_WINDOW;
-    int beta = asp_score + ASP_WINDOW;
+    int alpha = -INT_MAX;
+    int beta = INT_MAX;
+    float time_spent = 0.;
+    int depth = 1;
 
     SearchNode result;
-    int best_move;
+    while (time_spent * 4 < TIME_BUDGET) {
+        // Loop until search succeeds
+        while (true) {
+            // Try search in current window
+            #ifdef PRINT_SEARCH_INFO
+            fmt::print(stderr, "depth {:2} ({:.2f}, {:.2f}) \t",
+                       depth, win_prob(alpha), win_prob(beta));
+            #endif
+            result = ab_deep(b, alpha, beta, depth, ht, false, &nodes);
 
-    // Loop until search succeeds
-    while (true) {
-        // Try search in current window
-        #ifdef PRINT_SEARCH_INFO
-        cerr << "Trying aspiration search in (" << win_prob(alpha) << ", " << win_prob(beta) << ")\n";
-        #endif
-        result = ab_deep(b, alpha, beta, search_depth, false, &nodes);
-        /* result.score = aspiration_search(b, &best_move, alpha, beta, &nodes); */
-        /* result.best_move = best_move; */
+            if (result.score >= beta) { // Fail-high: increase beta
+                beta = beta + ASP_WINDOW * 2;
+            } else if (result.score <= alpha) { // Fail-low: decrease alpha
+                alpha = alpha - ASP_WINDOW * 2;
+            } else { // alpha < score < beta: success
+                break;
+            }
 
-        if (result.score >= beta) { // Fail-high: increase beta
-            beta = beta + ASP_WINDOW * 2;
-        } else if (result.score <= alpha) { // Fail-low: decrease alpha
-            alpha = alpha - ASP_WINDOW * 2;
-        } else { // alpha < score < beta: success
-            break;
+            cerr << "\n";
         }
+
+        alpha = result.score - ASP_WINDOW;
+        beta = result.score + ASP_WINDOW;
+
+        if (depth >= 10) {
+            depth += 1;
+        } else {
+            depth += 2;
+        }
+
+        time_spent = (float)(clock() - start) / CLOCKS_PER_SEC;
+
+        #ifdef PRINT_SEARCH_INFO
+        fmt::print(stderr, "{} {:.3f} {:.3f}s\n",
+                   move_to_notation(result.best_move), win_prob(result.score), time_spent);
+        #endif
     }
 
     #ifdef PRINT_SEARCH_INFO
-    cerr << "Best move: " << move_to_notation(result.best_move) << " score " << win_prob(result.score) << "\n";
-    clock_t end = clock();
-    float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
     float nps = (float)nodes / time_spent;
     cerr << nodes << " nodes in " << time_spent << "s @ " << nps << " node/s\n";
+    #endif
+
+    #ifdef PRINT_SEARCH_INFO
+    SearchNode *pv = &result;
+    fmt::print(stderr, "PV: ");
+    do {
+        fmt::print(stderr, "{} -> ", move_to_notation(pv->best_move));
+        b = board::do_move(b, pv->best_move);
+    } while ((pv = ht.get(b)) && pv->type == NodeType::PV);
+    fmt::print(stderr, "...\n");
     #endif
 
     return result.best_move;

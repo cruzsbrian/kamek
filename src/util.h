@@ -41,6 +41,8 @@ struct ScoredMove {
     board::Board after;
 };
 
+bool operator<(const ScoredMove a, const ScoredMove b);
+
 
 struct ScoredPosition {
     board::Board board;
