@@ -1,4 +1,5 @@
 #include "board/board.h"
+#include "eval/pattern_eval.h"
 #include "game/cpu.h"
 #include "util.h"
 
@@ -55,9 +56,8 @@ int main(int argc, char *argv[]) {
     }
 
     board::Board b = board::starting_position();
-
+    eval::load_weights("weights.txt");
     CPU cpu{11, 22};
-    /* CPU cpu{8, 20}; */
 
     cout << "Init done.\n";
 

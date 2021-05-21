@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <string>
 
 #include "../board/board.h"
 
@@ -15,6 +15,7 @@ namespace eval {
 void pattern_activations(int *ret, board::Board b);
 int score(board::Board b);
 
+void load_weights(string filename);
 
 uint64_t flip_vert(uint64_t x);
 uint64_t flip_horiz(uint64_t x);
@@ -107,7 +108,6 @@ const uint8_t mask_base[N_ALL_MASKS] = {
     HORVERT_4, HORVERT_4, HORVERT_4, HORVERT_4
 };
 
-extern int16_t weights[total_instances];
 
 // Conversion from two binary masks to ternary indices
 const uint16_t ternary_ones[256] = {

@@ -113,11 +113,6 @@ if __name__ == "__main__":
 
     print("Writing weights to file...")
     with open("weights.txt", "w") as outfile:
-        n = 0
+        outfile.write(str(int(intercept)) + "\n")
         for w in weights[0]:
-            outfile.write(str(int(w)))
-            n += 1
-            if n % 16 == 0:
-                outfile.write(",\n")
-            else:
-                outfile.write(", ")
+            outfile.write(str(int(w)) + "\n")

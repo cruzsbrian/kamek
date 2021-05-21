@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 
+#include "eval/pattern_eval.h"
 #include "game/cpu.h"
 
 
@@ -77,6 +78,7 @@ int main(int argc, char *argv[]) {
 
 
     board::Board board = board::starting_position();
+    eval::load_weights("weights.txt");
     CPU cpu{max_depth, 22};
     vector<board::Board> history;
 
