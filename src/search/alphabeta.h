@@ -1,5 +1,4 @@
 #include <vector>
-#include <algorithm>
 
 #include "../board/board.h"
 #include "../util.h"

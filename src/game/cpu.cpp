@@ -11,9 +11,8 @@
 #include <time.h>
 
 
-/* const int ASP_DEPTH_DELTA = 2; */
 const int ASP_WINDOW = 75;
-const float TIME_BUDGET = 15.;
+const float TIME_BUDGET = 10.;
 
 
 CPU::CPU(int search_depth, int endgame_depth) {
@@ -28,9 +27,9 @@ int CPU::next_move(board::Board b, int ms_left) {
     #ifdef PRINT_SEARCH_INFO
     cerr << "\n=======================|   WONKY_KONG   |=======================\n";
     cerr << board::to_str(b) << "\n";
-
     cerr << empties << " empties\n";
     #endif
+
 
     if (empties <= endgame_depth) {
         #ifdef PRINT_SEARCH_INFO
@@ -46,10 +45,11 @@ int CPU::next_move(board::Board b, int ms_left) {
         cerr << stats.nodes << " nodes in " << stats.time_spent << "s @ " << nps << " node/s\n";
         #endif
 
-        if (best_move != endgame::MOVE_LOSE) {
+        if (best_move != endgame::MOVE_LOSE) { // accept draws
             return best_move;
         }
     }
+
 
     long nodes = 0L;
     clock_t start = clock();
@@ -100,16 +100,16 @@ int CPU::next_move(board::Board b, int ms_left) {
 
     #ifdef PRINT_SEARCH_INFO
     float nps = (float)nodes / time_spent;
-    cerr << nodes << " nodes in " << time_spent << "s @ " << nps << " node/s\n";
-    #endif
+    fmt::print(stderr, "{:.2e} nodes in {:.3f}s @ {:.2e} node/s\n",
+               (float)nodes, time_spent, nps);
 
-    #ifdef PRINT_SEARCH_INFO
+    // Follow PV through stored nodes to print predicted sequence of moves
     SearchNode *pv = &result;
     fmt::print(stderr, "PV: ");
     do {
         fmt::print(stderr, "{} -> ", move_to_notation(pv->best_move));
         b = board::do_move(b, pv->best_move);
-    } while ((pv = ht.get(b)) && pv->type == NodeType::PV);
+    } while ((pv = ht.get(b)) && pv->type == NodeType::PV); // fail-high nodes are not given best moves
     fmt::print(stderr, "...\n");
     #endif
 

@@ -2,6 +2,7 @@
 
 #include <climits>
 #include <iostream>
+#include <algorithm>
 
 #include "../eval/pattern_eval.h"
 
@@ -9,32 +10,18 @@
 const int DEEP_CUTOFF = 8;
 const int MED_CUTOFF = 5;
 
+const float SIGMA = 200.;
+const float T = 0.39;
+
 
 SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht, bool passed, long *n) {
     (*n)++;
 
-    // If we already searched to at least this depth, return stored node
-    SearchNode *table_entry = ht.get(b);
-    if (table_entry && table_entry->depth >= depth) {
-        switch (table_entry->type) {
-            case NodeType::PV:
-                return *table_entry;
-                break;
-            case NodeType::HIGH:
-                if (table_entry->score >= beta) {
-                    return {depth, NodeType::HIGH, beta, table_entry->best_move};
-                }
-                break;
-            case NodeType::LOW:
-                if (table_entry->score <= alpha) {
-                    return {depth, NodeType::LOW, alpha, table_entry->best_move};
-                }
-                break;
-        }
-    }
-
     if (depth == 0) {
-        return {depth, NodeType::PV, eval::score(b), -1};
+        int score = eval::score(b);
+        if (score > beta) return {depth, NodeType::HIGH, beta, -1};
+        if (score < alpha) return {depth, NodeType::LOW, alpha, -1};
+        return {depth, NodeType::PV, score, -1};
     }
 
     int sort_depth = max(0, depth - DEEP_CUTOFF);
@@ -63,6 +50,7 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
     for (auto m : moves) {
         // Get score
         int score;
+
         if (depth <= DEEP_CUTOFF) {
             score = -ab_medium(m.after, -beta, -best_score, depth - 1, ht, false, n);
         } else {
