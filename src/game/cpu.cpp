@@ -1,6 +1,7 @@
 #include "cpu.h"
 
 #include "../search/alphabeta.h"
+#include "../search/pvs.h"
 #include "../search/endgame.h"
 #include "../eval/pattern_eval.h"
 #include "../util.h"
@@ -13,12 +14,6 @@
 
 const int ASP_WINDOW = 75;
 const float TIME_BUDGET = 10.;
-
-
-CPU::CPU(int search_depth, int endgame_depth) {
-    this->search_depth = search_depth;
-    this->endgame_depth = endgame_depth;
-}
 
 
 int CPU::next_move(board::Board b, int ms_left) {
@@ -60,7 +55,7 @@ int CPU::next_move(board::Board b, int ms_left) {
     int depth = 1;
 
     SearchNode result;
-    while (time_spent * 4 < TIME_BUDGET) {
+    while (time_spent * 4 < TIME_BUDGET && depth <= max_depth) {
         // Loop until search succeeds
         while (true) {
             // Try search in current window
@@ -84,7 +79,7 @@ int CPU::next_move(board::Board b, int ms_left) {
         alpha = result.score - ASP_WINDOW;
         beta = result.score + ASP_WINDOW;
 
-        if (depth >= 10) {
+        if (depth >= max_depth / 2) {
             depth += 1;
         } else {
             depth += 2;
@@ -110,7 +105,7 @@ int CPU::next_move(board::Board b, int ms_left) {
         fmt::print(stderr, "{} -> ", move_to_notation(pv->best_move));
         b = board::do_move(b, pv->best_move);
     } while ((pv = ht.get(b)) && pv->type == NodeType::PV); // fail-high nodes are not given best moves
-    fmt::print(stderr, "...\n");
+    fmt::print(stderr, "...\n\n");
     #endif
 
     return result.best_move;

@@ -320,20 +320,48 @@ Board add_piece(Board b, int pos, bool c) {
 string to_grid(Board b, bool color) {
     string ret = "  a b c d e f g h\n";
 
+    if (color == PIECE_OPP) b = Board{b.opp, b.own};
+
     for (auto i = 0; i < 8; ++i) {
         ret += to_string(i + 1) + " ";
         for (auto j = 0; j < 8; ++j) {
             int pos = (i * 8) + j;
 
-            bool black = (b.own >> pos) & 1L;
-            bool white = (b.opp >> pos) & 1L;
-
-            if (white) {
-                ret += "O ";
-            } else if (black) {
+            if ((b.own >> pos) & 1L) {
                 ret += "# ";
+            } else if ((b.opp >> pos) & 1L) {
+                ret += "O ";
             } else {
-                ret += "_ ";
+                ret += ". ";
+            }
+        }
+        ret += "\n";
+    }
+
+    return ret;
+}
+
+
+string to_grid_moves(Board b, bool color) {
+    string ret = "  a b c d e f g h\n";
+
+    uint64_t move_mask = get_moves(b);
+
+    if (color == PIECE_OPP) b = Board{b.opp, b.own};
+
+    for (auto i = 0; i < 8; ++i) {
+        ret += to_string(i + 1) + " ";
+        for (auto j = 0; j < 8; ++j) {
+            int pos = (i * 8) + j;
+
+            if ((b.own >> pos) & 1L) {
+                ret += "# ";
+            } else if ((b.opp >> pos) & 1L) {
+                ret += "O ";
+            } else if ((move_mask >> pos) & 1L) {
+                ret += "+ ";
+            } else {
+                ret += ". ";
             }
         }
         ret += "\n";

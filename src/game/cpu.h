@@ -1,15 +1,14 @@
 #pragma once
 
-#include "player.h"
 #include "../search/hashtable.h"
 
 
-class CPU : public Player {
+class CPU {
 public:
-    CPU(int search_depth, int endgame_depth);
+    CPU(int s, int e): max_depth(s), endgame_depth(e) {};
     int next_move(board::Board b, int ms_left);
 private:
     HashTable ht;
-    int search_depth;
+    int max_depth;
     int endgame_depth;
 };

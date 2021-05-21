@@ -30,6 +30,7 @@ Board do_move(Board b, int pos);
 Board add_piece(Board b, int pos, bool c);
 
 string to_grid(Board b, bool color);
+string to_grid_moves(Board b, bool color);
 string to_str(Board b);
 string to_str(uint64_t mask);
 

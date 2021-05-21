@@ -8,8 +8,8 @@ BINDIR = bin
 
 BOARD_SRCS = board.cpp
 EVAL_SRCS = pattern_eval.cpp
-SEARCH_SRCS = alphabeta.cpp endgame.cpp hashtable.cpp
-GAME_SRCS = game.cpp cpu.cpp
+SEARCH_SRCS = alphabeta.cpp endgame.cpp hashtable.cpp pvs.cpp
+GAME_SRCS = cpu.cpp
 UTIL_SRCS = util.cpp
 COMMON_SRCS = $(addprefix board/, $(BOARD_SRCS)) \
 			  $(addprefix eval/, $(EVAL_SRCS)) \
@@ -18,7 +18,7 @@ COMMON_SRCS = $(addprefix board/, $(BOARD_SRCS)) \
 			  $(UTIL_SRCS) \
 
 MAIN_SRCS = protocol.cpp
-CLI_SRCS = cli.cpp game/human_player.cpp
+CLI_SRCS = cli.cpp
 
 BOARD_EVAL_SRCS = train/board_eval.cpp
 SELFPLAY_SRCS = train/selfplay.cpp
