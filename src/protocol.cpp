@@ -15,9 +15,7 @@
 bool read_cs2_move(int *move, int *ms_left) {
     int row, col;
 
-    cin >> row >> col >> *ms_left;
-
-    if (cin.eof()) {
+    if (!(cin >> row >> col >> *ms_left)) {
         return false;
     }
 

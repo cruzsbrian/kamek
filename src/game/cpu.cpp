@@ -104,7 +104,7 @@ int CPU::next_move(board::Board b, int ms_left) {
     do {
         fmt::print(stderr, "{} -> ", move_to_notation(pv->best_move));
         b = board::do_move(b, pv->best_move);
-    } while ((pv = ht.get(b)) && pv->type == NodeType::PV); // fail-high nodes are not given best moves
+    } while (pv-> best_move != -1 && (pv = ht.get(b)) && pv->type == NodeType::PV); // fail-high nodes are not given best moves
     fmt::print(stderr, "...\n\n");
     #endif
 
