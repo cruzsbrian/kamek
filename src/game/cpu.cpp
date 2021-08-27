@@ -47,14 +47,19 @@ int CPU::next_move(board::Board b, int ms_left) {
 
         endgame::EndgameStats stats;
 
-        int best_move = endgame::best_move(b, stats);
+        int best_move = endgame::best_move(b, stats, -1, 1);
 
         #ifdef PRINT_SEARCH_INFO
         float nps = (float)stats.nodes / stats.time_spent;
-        cerr << stats.nodes << " nodes in " << stats.time_spent << "s @ " << nps << " node/s\n";
+        fmt::print(stderr, "{:.2e} nodes in {:.3f}s @ {:.2e} node/s\n",
+                   (float)stats.nodes, stats.time_spent, nps);
         #endif
 
         if (best_move != endgame::MOVE_LOSE) { // accept draws
+            #ifdef PRINT_SEARCH_INFO
+            fmt::print(stderr, "Playing move {}\n", move_to_notation(best_move));
+            #endif
+
             return best_move;
         }
     }

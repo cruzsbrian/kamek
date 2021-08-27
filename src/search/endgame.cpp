@@ -40,7 +40,7 @@ int solve(board::Board b, EndgameStats &stats, bool display) {
 }
 
 
-int best_move(board::Board b, EndgameStats &stats) {
+int best_move(board::Board b, EndgameStats &stats, int alpha, int beta) {
     clock_t start = clock();
     long nodes = 0L;
 
@@ -70,7 +70,6 @@ int best_move(board::Board b, EndgameStats &stats) {
     }
 
 
-    int max_score = -1;
     int best_move = MOVE_LOSE; // if no winning moves are found, return this code
 
     for (auto i = 0; i < n_moves; i++) {
@@ -93,18 +92,21 @@ int best_move(board::Board b, EndgameStats &stats) {
         }
 
         // Get score
-        int score = -eg_deep(moves[i].after, -1, -max_score, empties - 1, false, &nodes);
+        int score = -eg_deep(moves[i].after, -beta, -alpha, empties - 1, false, &nodes);
 
         #ifdef PRINT_SEARCH_INFO
-        cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << score << "\n";
+        if (score > alpha)
+            cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << score << "\n";
+        else
+            cerr << "Score for move " << move_to_notation(moves[i].move) << ": --\n";
         #endif
 
-        if (score > max_score) {
-            max_score = score;
+        if (score > alpha) {
+            alpha = score;
             best_move = moves[i].move;
         }
 
-        if (score >= 1) { // accept any win
+        if (score >= beta) { // accept first move winning by at least beta
             clock_t end = clock();
             float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
 

@@ -10,7 +10,7 @@ struct EndgameStats {
 };
 
 int solve(board::Board b, EndgameStats &stats, bool display);
-int best_move(board::Board b, EndgameStats &stats);
+int best_move(board::Board b, EndgameStats &stats, int alpha, int beta);
 
 int eg_deep(board::Board b, int alpha, int beta, int empties, bool passed, long *n);
 int eg_medium(board::Board b, int alpha, int beta, int empties, bool passed, long *n);
