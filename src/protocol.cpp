@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     board::Board b = board::starting_position();
     eval::load_weights("weights.txt");
-    CPU cpu{11, 22};
+    CPU cpu{30, 30.0, 23};
 
     cout << "Init done.\n";
 

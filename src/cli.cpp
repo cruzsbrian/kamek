@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    int max_depth = 20;
+    int max_depth = 30;
     if (argc == 3) {
         try {
             max_depth = std::stoi(argv[2]);
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 
     board::Board board = board::starting_position();
     eval::load_weights("weights.txt");
-    CPU cpu{max_depth, 22};
+    CPU cpu{max_depth, 30.0, 23};
     vector<board::Board> history;
 
     history.push_back(board);
