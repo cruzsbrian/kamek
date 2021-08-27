@@ -10,6 +10,9 @@
 const int DEEP_CUTOFF = 8;
 const int MED_CUTOFF = 5;
 
+const int STATIC_EVAL_MARGIN_MEDIUM = 300;
+const int STATIC_EVAL_MARGIN_SHALLOW = 150;
+
 const float SIGMA = 200.;
 const float T = 0.39;
 
@@ -29,7 +32,7 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
 
     if (moves.size() == 0) {
         if (passed) { // Game is over: solved node
-            int score = board::popcount(b.own) - board::popcount(b.opp);
+            int score = INT_MAX * sgn(board::popcount(b.own) - board::popcount(b.opp));
             ht.set(b, {depth, NodeType::PV, score, -1});
             return {depth, NodeType::PV, score, -1};
         } else {
@@ -80,6 +83,14 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
 int ab_medium(board::Board b, int alpha, int beta, int depth, HashTable &ht, bool passed, long *n) {
     (*n)++;
 
+    // Forward pruning
+    int static_score = eval::score(b);
+    if (static_score >= beta + STATIC_EVAL_MARGIN_MEDIUM) {
+        return static_score;
+    } else if (static_score <= alpha - STATIC_EVAL_MARGIN_MEDIUM) {
+        return static_score;
+    }
+
     if (depth == 0) {
         return eval::score(b);
     }
@@ -88,7 +99,7 @@ int ab_medium(board::Board b, int alpha, int beta, int depth, HashTable &ht, boo
     vector<ScoredMove> moves = get_sorted_moves(b, alpha, beta, sort_depth, ht);
 
     if (moves.size() == 0) {
-        if (passed) return (board::popcount(b.own) - board::popcount(b.opp)) * 50;
+        if (passed) return INT_MAX * sgn(board::popcount(b.own) - board::popcount(b.opp));
         return -ab_medium(board::Board{b.opp, b.own}, -beta, -alpha, depth, ht, true, n);
     }
 
@@ -111,6 +122,14 @@ int ab_medium(board::Board b, int alpha, int beta, int depth, HashTable &ht, boo
 int ab(board::Board b, int alpha, int beta, int depth, bool passed, long *n) {
     (*n)++;
 
+    // Static eval pruning
+    int static_score = eval::score(b);
+    if (static_score > beta + STATIC_EVAL_MARGIN_SHALLOW) {
+        return static_score;
+    } else if (static_score < alpha - STATIC_EVAL_MARGIN_SHALLOW) {
+        return static_score;
+    }
+
     if (depth == 0) {
         return eval::score(b);
     }
@@ -118,7 +137,7 @@ int ab(board::Board b, int alpha, int beta, int depth, bool passed, long *n) {
     uint64_t move_mask = board::get_moves(b);
 
     if (move_mask == 0ULL) {
-        if (passed) return (board::popcount(b.own) - board::popcount(b.opp)) * 50;
+        if (passed) return INT_MAX * sgn(board::popcount(b.own) - board::popcount(b.opp));
         return -ab(board::Board{b.opp, b.own}, -beta, -alpha, depth, true, n);
     }
 
