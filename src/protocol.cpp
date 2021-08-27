@@ -15,7 +15,7 @@
 bool read_cs2_move(int *move, int *ms_left) {
     int row, col;
 
-    if (!(cin >> row >> col >> *ms_left)) {
+    if (!(cin >> col >> row >> *ms_left)) {
         return false;
     }
 
@@ -29,14 +29,15 @@ void print_cs2_move(int move) {
     int row, col;
 
     if (move == -1) {
-        cout << "pass" << "\n";
+        /* cout << "pass" << "\n"; */
+        cout << "-1 -1\n";
         return;
     }
 
     row = move / 8;
     col = move % 8;
 
-    cout << row << " " << col << "\n";
+    cout << col << " " << row << "\n";
 }
 
 
@@ -47,7 +48,7 @@ int main(int argc, char *argv[]) {
     }
 
     bool bot_color;
-    if (strcmp(argv[1], "black") == 0) {
+    if (strcmp(argv[1], "Black") == 0 || strcmp(argv[1], "black") == 0) {
         bot_color = BLACK;
     } else {
         bot_color = WHITE;

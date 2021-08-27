@@ -10,13 +10,17 @@
 
 
 bool is_notation_valid(string move_str) {
-    return (move_str.size() == 2 &&
+    return (move_str.compare("pass") == 0 ||
+            (move_str.size() == 2 &&
             'a' <= move_str[0] && move_str[0] <= 'h' &&
-            '1' <= move_str[1] && move_str[1] <= '8');
+            '1' <= move_str[1] && move_str[1] <= '8'));
 }
 
 bool is_move_legal(board::Board b, int move) {
     uint64_t move_mask = board::get_moves(b);
+
+    // Passing is legal when no moves are available
+    if (move_mask == 0ULL && move == -1) return true;
 
     bool valid = false;
     while (move_mask != 0ULL) {
@@ -87,7 +91,7 @@ int main(int argc, char *argv[]) {
     cout << "Black to move\n";
 
     if (bot_color == BLACK) {
-        board = board::do_move(board, cpu.next_move(board, 0));
+        board = board::do_move(board, cpu.next_move(board, -1));
         history.push_back(board);
 
         cout << board::to_grid_moves(board, !bot_color);

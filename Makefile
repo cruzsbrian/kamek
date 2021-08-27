@@ -8,7 +8,7 @@ BINDIR = bin
 
 BOARD_SRCS = board.cpp
 EVAL_SRCS = pattern_eval.cpp
-SEARCH_SRCS = alphabeta.cpp endgame.cpp hashtable.cpp pvs.cpp
+SEARCH_SRCS = alphabeta.cpp endgame.cpp hashtable.cpp
 GAME_SRCS = cpu.cpp
 UTIL_SRCS = util.cpp
 COMMON_SRCS = $(addprefix board/, $(BOARD_SRCS)) \
@@ -47,7 +47,7 @@ cli: $(addprefix $(OBJDIR)/, $(CLI_OBJS))
 	mkdir -p bin
 	$(CC) $^ $(LDFLAGS) -o $(BINDIR)/$@
 
-train: board_eval selfplay
+train: board_eval
 
 test: $(addprefix $(OBJDIR)/, $(TEST_OBJS))
 	mkdir -p bin

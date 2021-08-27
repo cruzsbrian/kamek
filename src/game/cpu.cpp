@@ -1,7 +1,6 @@
 #include "cpu.h"
 
 #include "../search/alphabeta.h"
-#include "../search/pvs.h"
 #include "../search/endgame.h"
 #include "../eval/pattern_eval.h"
 #include "../util.h"
