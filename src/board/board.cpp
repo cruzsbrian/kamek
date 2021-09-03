@@ -26,7 +26,7 @@ Board from_str(std::string position) {
 
     for (unsigned i = 0; i < position.length(); i++) {
         auto ch = position[i];
-        if (ch == 'X') b = board::add_piece(b, i, PIECE_OWN);
+        if (ch == '*' || ch == 'X') b = board::add_piece(b, i, PIECE_OWN);
         else if (ch == 'O') b = board::add_piece(b, i, PIECE_OPP);
     }
 

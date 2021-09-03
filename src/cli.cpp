@@ -1,5 +1,5 @@
 #include <iostream>
-#include <cstring>
+#include <string>
 
 #include "eval/pattern_eval.h"
 #include "game/cpu.h"
@@ -10,7 +10,7 @@
 
 
 bool is_notation_valid(string move_str) {
-    return (move_str.compare("pass") == 0 ||
+    return (move_str == "pass" || move_str == "PASS" ||
             (move_str.size() == 2 &&
             'a' <= move_str[0] && move_str[0] <= 'h' &&
             '1' <= move_str[1] && move_str[1] <= '8'));
