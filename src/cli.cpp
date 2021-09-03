@@ -50,32 +50,17 @@ bool game_over(board::Board b, bool color) {
 
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        cerr << "usage: " << argv[0] << " COLOR [DEPTH]\n";
-        exit(1);
-    }
-
-    bool bot_color;
-    if (strcmp(argv[1], "black") == 0 || strcmp(argv[1], "b") == 0) {
-        bot_color = BLACK;
-    } else if (strcmp(argv[1], "white") == 0 || strcmp(argv[1], "w") == 0) {
-        bot_color = WHITE;
-    } else {
-        cerr << "use [black, white, b, w] to specify color\n";
-        exit(1);
-    }
-
     int max_depth = 30;
-    if (argc == 3) {
+    if (argc == 2) {
         try {
-            max_depth = std::stoi(argv[2]);
+            max_depth = std::stoi(argv[1]);
             if (max_depth <= 0) {
                 cerr << "depth must be at least 1\n";
                 exit(1);
             }
         } catch (...) {
             cerr << "invalid depth\n";
-            cerr << "usage: " << argv[0] << " COLOR [DEPTH]\n";
+            cerr << "usage: " << argv[0] << " [DEPTH]\n";
             exit(1);
         }
     }
@@ -83,39 +68,47 @@ int main(int argc, char *argv[]) {
 
     board::Board board = board::starting_position();
     eval::load_weights("weights.txt");
-    CPU cpu{max_depth, 30.0, 23};
+    CPU cpu{max_depth, 10.0, 23};
     vector<board::Board> history;
+    bool turn = BLACK;
 
     history.push_back(board);
     cout << board::to_grid_moves(board, BLACK);
     cout << "Black to move\n";
-
-    if (bot_color == BLACK) {
-        board = board::do_move(board, cpu.next_move(board, -1));
-        history.push_back(board);
-
-        cout << board::to_grid_moves(board, !bot_color);
-        cout << (!bot_color ? "White" : "Black") << " to move\n";
-    }
-
-    cout << "\nEnter move: ";
+    cout << "\n> ";
 
     string command;
     while (cin >> command) {
-        if (command.compare("undo") == 0) {
-            if (history.size() <= 2) {
+        if (command == "undo") { // Undo command.
+            if (history.size() <= 1) {
                 cout << "Nothing to undo\n";
             } else {
                 history.pop_back();
-                history.pop_back();
                 board = history.back();
+                turn = !turn;
 
-                cout << board::to_grid_moves(board, !bot_color);
-                cout << (!bot_color ? "White" : "Black") << " to move\n";
+                cout << board::to_grid_moves(board, turn);
+                cout << (turn ? "White" : "Black") << " to move\n";
             }
-        } else if (!is_notation_valid(command)) {
+        }
+        else if (command == "go") { // Go command.
+            // Get CPU move
+            int move = cpu.next_move(board, -1).best_move;
+            board = board::do_move(board, move);
+            history.push_back(board);
+            turn = !turn;
+
+            cout << board::to_grid_moves(board, turn);
+            if (game_over(board, turn)) break;
+            cout << (turn ? "White" : "Black") << " to move\n";
+        }
+        else if (command == "q" || command == "quit") { // Quit command.
+            break;
+        }
+        else if (!is_notation_valid(command)) { // Check if valid notation.
             cout << "'" << command << "' is not a valid move or 'undo'\n";
-        } else {
+        } 
+        else { // If valid notation, make move.
             int move = notation_to_move(command);
 
             if (!is_move_legal(board, move)) {
@@ -124,23 +117,15 @@ int main(int argc, char *argv[]) {
                 // Make move and store history
                 board = board::do_move(board, move);
                 history.push_back(board);
+                turn = !turn;
 
-                cout << board::to_grid_moves(board, bot_color);
-                if (game_over(board, bot_color)) break;
-                cout << (bot_color ? "White" : "Black") << " to move\n";
-
-                // Get CPU move
-                move = cpu.next_move(board, 0);
-                board = board::do_move(board, move);
-                history.push_back(board);
-
-                cout << board::to_grid_moves(board, !bot_color);
-                if (game_over(board, !bot_color)) break;
-                cout << (!bot_color ? "White" : "Black") << " to move\n";
+                cout << board::to_grid_moves(board, turn);
+                if (game_over(board, turn)) break;
+                cout << (turn ? "White" : "Black") << " to move\n";
             }
         }
 
-        cout << "\nEnter move: ";
+        cout << "\n> ";
     }
 
     cout << "\n";
