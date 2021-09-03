@@ -1,5 +1,4 @@
 obj/*
-bin/*
 data/*
 temp/*
 .DS_Store
@@ -10,3 +9,9 @@ notes.xopp
 data/
 
 weights.txt
+
+wonky_kong
+cli
+cs2
+board_eval
+eg_test
