@@ -4,8 +4,8 @@
 #include "../util.h"
 
 
-#define N_SLOTS 0x100000
-#define MAX_HASH 0xfffff
+#define N_SLOTS 0x200000
+#define MAX_HASH 0x1fffff
 
 
 struct TableNode {
