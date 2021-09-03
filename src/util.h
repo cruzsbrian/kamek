@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <time.h>
 
 #include "board/board.h"
 
@@ -13,7 +14,7 @@ int notation_to_move(const string &input);
 
 float win_prob(int score);
 
-vector<int> eval_activations(board::Board board);
+float get_time_since(clock_t start);
 
 
 template <typename T> int sgn(T val) {
@@ -25,7 +26,8 @@ template <typename T> int sgn(T val) {
 // PV: principal variation, score is exact
 // HIGH: search failed high, score is lower bound
 // LOW: search failed low, score is upper bound
-enum NodeType { PV, HIGH, LOW };
+// TIMEOUT: search timed out, score and bestmove are invalid
+enum NodeType { PV, HIGH, LOW, TIMEOUT };
 
 struct SearchNode {
     int depth;

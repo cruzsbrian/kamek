@@ -13,11 +13,8 @@ const int MED_CUTOFF = 5;
 const int STATIC_EVAL_MARGIN_MEDIUM = 300;
 const int STATIC_EVAL_MARGIN_SHALLOW = 150;
 
-const float SIGMA = 200.;
-const float T = 0.39;
 
-
-SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht, bool passed, long *n) {
+SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht, bool passed, long *n, clock_t start, float time_limit) {
     (*n)++;
 
     if (depth == 0) {
@@ -25,6 +22,11 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
         if (score > beta) return {depth, NodeType::HIGH, beta, -1};
         if (score < alpha) return {depth, NodeType::LOW, alpha, -1};
         return {depth, NodeType::PV, score, -1};
+    }
+
+    // Check for timeout.
+    if (get_time_since(start) >= time_limit) {
+        return {depth, NodeType::TIMEOUT, 0, -1};
     }
 
     int sort_depth = max(0, depth - DEEP_CUTOFF);
@@ -36,12 +38,17 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
             ht.set(b, {depth, NodeType::PV, score, -1});
             return {depth, NodeType::PV, score, -1};
         } else {
-            int score = -ab_deep(board::Board{b.opp, b.own}, -beta, -alpha, depth, ht, true, n).score;
+            SearchNode result = ab_deep(board::Board{b.opp, b.own}, -beta, -alpha, depth, ht, true, n, start, time_limit);
+            if (result.type == NodeType::TIMEOUT) { // propagate timeouts back up
+                return {depth, NodeType::TIMEOUT, 0, -1};
+            }
+
+            int score = -result.score;
             if (score > alpha) {
                 ht.set(b, {depth, NodeType::PV, score, -1});
                 return {depth, NodeType::PV, score, -1};
             } else {
-                ht.set(b, {depth, NodeType::LOW, alpha, -1});
+                /* ht.set(b, {depth, NodeType::LOW, alpha, -1}); */
                 return {depth, NodeType::LOW, alpha, -1};
             }
         }
@@ -57,11 +64,16 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
         if (depth <= DEEP_CUTOFF) {
             score = -ab_medium(m.after, -beta, -best_score, depth - 1, ht, false, n);
         } else {
-            score = -ab_deep(m.after, -beta, -best_score, depth - 1, ht, false, n).score;
+            SearchNode result = ab_deep(m.after, -beta, -best_score, depth - 1, ht, false, n, start, time_limit);
+            if (result.type == NodeType::TIMEOUT) { // propagate timeouts back up
+                return {depth, NodeType::TIMEOUT, 0, -1};
+            }
+
+            score = -result.score;
         }
 
         if (score >= beta) {
-            ht.set(b, {depth, NodeType::HIGH, beta, -1});
+            /* ht.set(b, {depth, NodeType::HIGH, beta, -1}); */
             return {depth, NodeType::HIGH, beta, -1};
         }
         if (score > best_score) {
@@ -74,7 +86,7 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
         ht.set(b, {depth, NodeType::PV, best_score, best_move});
         return {depth, NodeType::PV, best_score, best_move};
     } else {
-        ht.set(b, {depth, NodeType::LOW, alpha, best_move});
+        /* ht.set(b, {depth, NodeType::LOW, alpha, best_move}); */
         return {depth, NodeType::LOW, alpha, best_move};
     }
 }
@@ -83,7 +95,7 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
 int ab_medium(board::Board b, int alpha, int beta, int depth, HashTable &ht, bool passed, long *n) {
     (*n)++;
 
-    // Forward pruning
+    // Static eval pruning
     int static_score = eval::score(b);
     if (static_score >= beta + STATIC_EVAL_MARGIN_MEDIUM) {
         return static_score;

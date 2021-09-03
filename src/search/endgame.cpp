@@ -23,7 +23,7 @@ int solve(board::Board b, EndgameStats &stats, bool display) {
     long nodes = 0L;
 
     int empties = 64 - board::popcount(b.own | b.opp);
-    int score = eg_deep(b, -1, 1, empties, false, &nodes);
+    int score = eg_deep(b, -INT_MAX, INT_MAX, empties, false, &nodes);
 
     clock_t end = clock();
     float time_spent = (float)(end - start) / CLOCKS_PER_SEC;

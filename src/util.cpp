@@ -36,6 +36,11 @@ float win_prob(int score) {
 }
 
 
+float get_time_since(clock_t start) {
+    return (float)(clock() - start) / CLOCKS_PER_SEC;
+}
+
+
 bool operator<(const ScoredMove a, const ScoredMove b) {
     return a.score < b.score;
 }
