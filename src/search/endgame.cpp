@@ -4,7 +4,6 @@
 #include <iostream>
 #include <climits>
 
-#include "../util.h"
 #include "../eval/pattern_eval.h"
 
 
@@ -23,7 +22,7 @@ int solve(board::Board b, EndgameStats &stats, bool display) {
     long nodes = 0L;
 
     int empties = 64 - board::popcount(b.own | b.opp);
-    int score = eg_deep(b, -INT_MAX, INT_MAX, empties, false, &nodes);
+    SearchNode result = eg_deep(b, -INT_MAX, INT_MAX, empties, false, &nodes, start, 100.);
 
     clock_t end = clock();
     float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
@@ -36,105 +35,32 @@ int solve(board::Board b, EndgameStats &stats, bool display) {
         cerr << nodes << " nodes in " << time_spent << "s @ " << nps << " node/s\n";
     }
 
-    return score;
+    return result.score;
 }
 
 
-int best_move(board::Board b, EndgameStats &stats, int alpha, int beta) {
-    clock_t start = clock();
-    long nodes = 0L;
-
-    int empties = 64 - board::popcount(b.own | b.opp);
-
-    uint64_t move_mask = board::get_moves(b);
-
-    if (move_mask == 0ULL) {
-        #ifdef PRINT_SEARCH_INFO
-        cerr << "Must pass\n";
-        #endif
-        return -1;
-    }
-
-    // Get all moves, boards, and opponent board scores in arrays for sorting
-    ScoredMove moves[32];
-    int n_moves = 0;
-    while (move_mask != 0ULL) {
-        int m = __builtin_ctzll(move_mask);
-        move_mask &= move_mask - 1;
-
-        board::Board after = board::do_move(b, m);
-        int score = eval::score(after);
-
-        moves[n_moves] = ScoredMove{m, score, after};
-        n_moves++;
-    }
-
-
-    int best_move = MOVE_LOSE; // if no winning moves are found, return this code
-
-    for (auto i = 0; i < n_moves; i++) {
-        // Traverse ahead to find best move index
-        int best = INT_MAX;
-        int best_idx = i;
-        for (auto j = i + 1; j < n_moves; j++) {
-            int score = moves[j].score;
-            if (score < best) {
-                best = score;
-                best_idx = j;
-            }
-        }
-
-        // Swap with current position
-        if (best_idx != i) {
-            ScoredMove tmp = moves[i];
-            moves[i] = moves[best_idx];
-            moves[best_idx] = tmp;
-        }
-
-        // Get score
-        int score = -eg_deep(moves[i].after, -beta, -alpha, empties - 1, false, &nodes);
-
-        #ifdef PRINT_SEARCH_INFO
-        if (score > alpha)
-            cerr << "Score for move " << move_to_notation(moves[i].move) << ": " << score << "\n";
-        else
-            cerr << "Score for move " << move_to_notation(moves[i].move) << ": --\n";
-        #endif
-
-        if (score > alpha) {
-            alpha = score;
-            best_move = moves[i].move;
-        }
-
-        if (score >= beta) { // accept first move winning by at least beta
-            clock_t end = clock();
-            float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
-
-            stats.nodes += nodes;
-            stats.time_spent += time_spent;
-
-            return moves[i].move;
-        }
-    }
-
-    clock_t end = clock();
-    float time_spent = (float)(end - start) / CLOCKS_PER_SEC;
-
-    stats.nodes += nodes;
-    stats.time_spent += time_spent;
-
-    return best_move;
-}
-
-
-int eg_deep(board::Board b, int alpha, int beta, int empties, bool passed, long *n) {
+SearchNode eg_deep(board::Board b, int alpha, int beta, int empties, bool passed, long *n, clock_t start, float time_limit) {
     (*n)++;
 
+    // Check for timeout.
+    if (get_time_since(start) >= time_limit) {
+        return {empties, NodeType::TIMEOUT, 0, -1};
+    }
+
     uint64_t move_mask = board::get_moves(b);
 
     if (move_mask == 0ULL) {
-        if (passed) return board::popcount(b.own) - board::popcount(b.opp);
-        return -eg_deep(board::Board{b.opp, b.own}, -beta, -alpha, empties, true, n);
+        if (passed) {
+            int score = board::popcount(b.own) - board::popcount(b.opp);
+            return {empties, NodeType::PV, score, -1};
+        } else {
+            SearchNode result = eg_deep(board::Board{b.opp, b.own}, -beta, -alpha, empties, true, n, start, time_limit);
+            if (result.type == NodeType::TIMEOUT) { // propagate timeouts back up
+                return {DEPTH_100, NodeType::TIMEOUT, 0, -1};
+            }
+
+            return {DEPTH_100, NodeType::PV, -result.score, -1};
+        }
     }
 
     // Get all moves, boards, and opponent mobilities in arrays for sorting
@@ -147,13 +73,15 @@ int eg_deep(board::Board b, int alpha, int beta, int empties, bool passed, long 
         board::Board after = board::do_move(b, m);
         int opp_moves = board::popcount(board::get_moves(after));
 
-        /* if (m == 0 || m == 7 || m == 56 || m == 63) opp_moves -= KM_WEIGHT_DEEP; */
+        if (m == 0 || m == 7 || m == 56 || m == 63) opp_moves -= KM_WEIGHT_DEEP;
         opp_moves += eval::score(after) / 40;
 
         moves[n_moves] = ScoredMove{m, opp_moves, after};
         n_moves++;
     }
 
+    int best_move = MOVE_LOSE;
+    int best_score = alpha;
     for (auto i = 0; i < n_moves; i++) {
         // Traverse ahead to find best move index
         int best = INT_MAX;
@@ -177,20 +105,30 @@ int eg_deep(board::Board b, int alpha, int beta, int empties, bool passed, long 
         int score;
 
         if (empties <= DEEP_CUTOFF) {
-            score = -eg_medium(moves[i].after, -beta, -alpha, empties - 1, false, n);
+            score = -eg_medium(moves[i].after, -beta, -best_score, empties - 1, false, n);
         } else {
-            score = -eg_deep(moves[i].after, -beta, -alpha, empties - 1, false, n);
+            SearchNode result = eg_deep(moves[i].after, -beta, -best_score, empties - 1, false, n, start, time_limit);
+            if (result.type == NodeType::TIMEOUT) { // propagate timeouts back up
+                return {DEPTH_100, NodeType::TIMEOUT, 0, -1};
+            }
+
+            score = -result.score;
         }
 
         if (score >= beta) {
-            return beta;
+            return {DEPTH_100, NodeType::HIGH, beta, moves[i].move};
         }
-        if (score > alpha) {
-            alpha = score;
+        if (score > best_score) {
+            best_score = score;
+            best_move = moves[i].move;
         }
     }
 
-    return alpha;
+    if (best_score > alpha) {
+        return {DEPTH_100, NodeType::PV, best_score, best_move};
+    } else {
+        return {DEPTH_100, NodeType::LOW, alpha, best_move};
+    }
 }
 
 int eg_medium(board::Board b, int alpha, int beta, int empties, bool passed, long *n) {

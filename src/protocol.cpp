@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
             // Initialize bot.
             eval::load_weights("weights.txt");
-            cpu = new CPU(30, 30.0, 23);
+            cpu = new CPU(30, 30.0, 24);
             pos = board::starting_position();
 
             // Send ready signal.

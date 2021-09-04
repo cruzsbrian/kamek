@@ -42,37 +42,57 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
     float total_time = 0.;
 
     if (empties <= endgame_depth) {
-        #ifdef PRINT_SEARCH_INFO
-        cerr << "Solving endgame with " << empties << " empties\n";
-        #endif
-
-        endgame::EndgameStats stats;
+        long nodes = 0L;
+        float time_spent;
+        clock_t start = clock();
 
         bool wld = empties > 20;
+        float time_limit = time_budget / 2.0;
 
-        int best_move;
+        SearchNode result;
         if (wld) {
-            best_move = endgame::best_move(b, stats, -1, 1);
+            #ifdef PRINT_SEARCH_INFO
+            fmt::print(stderr, "endgame 100%W \t");
+            #endif
+            result = endgame::eg_deep(b, -1, 1, empties, false, &nodes, start, time_limit);
         } else {
-            best_move = endgame::best_move(b, stats, -INT_MAX, INT_MAX);
+            #ifdef PRINT_SEARCH_INFO
+            fmt::print(stderr, "endgame 100%  \t");
+            #endif
+            result = endgame::eg_deep(b, -INT_MAX, INT_MAX, empties, false, &nodes, start, time_limit);
         }
 
-        #ifdef PRINT_SEARCH_INFO
-        float nps = (float)stats.nodes / stats.time_spent;
-        fmt::print(stderr, "{:.2e} nodes in {:.3f}s @ {:.2e} node/s\n",
-                   (float)stats.nodes, stats.time_spent, nps);
-        #endif
+        time_spent = get_time_since(start);
 
-        if (best_move != endgame::MOVE_LOSE) { // accept draws
+        if (result.type == NodeType::TIMEOUT) {
             #ifdef PRINT_SEARCH_INFO
-            fmt::print(stderr, "Playing move {}\n\n", move_to_notation(best_move));
+            fmt::print(stderr, "TIMEOUT  {:.3f}s\n", time_spent);
+            #endif
+        } else if (result.best_move != endgame::MOVE_LOSE) { // accept draws
+            #ifdef PRINT_SEARCH_INFO
+            fmt::print(stderr, "{} ", move_to_notation(result.best_move), result.score);
+            if (wld) {
+                if (result.score > 0) fmt::print(stderr, "win\n");
+                else if (result.score < 0) fmt::print(stderr, "loss\n");
+                else fmt::print(stderr, "draw\n");
+            } else {
+                fmt::print(stderr, "score {}\n", result.score);
+            }
+
+            float nps = (float)nodes / time_spent;
+            fmt::print(stderr, "{:.2e} nodes in {:.3f}s @ {:.2e} node/s\n\n",
+                       (float)nodes, time_spent, nps);
             #endif
 
-            return {best_move, wld ? DEPTH_100W : DEPTH_100, 1, stats.nodes, stats.time_spent};
-            /* return best_move; */
+            return {result.best_move, wld ? DEPTH_100W : DEPTH_100, result.score, nodes, time_spent};
+        } else {
+            #ifdef PRINT_SEARCH_INFO
+            fmt::print(stderr, "no move found\n");
+            #endif
         }
 
-        total_time = stats.time_spent;
+
+        total_time = time_spent;
     }
 
 
@@ -171,5 +191,4 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
     #endif
 
     return {result.best_move, result.depth, result.score, total_nodes, total_time, pv_moves};
-    /* return result.best_move; */
 }

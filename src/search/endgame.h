@@ -1,4 +1,5 @@
 #include "../board/board.h"
+#include "../util.h"
 
 namespace endgame {
 
@@ -10,9 +11,8 @@ struct EndgameStats {
 };
 
 int solve(board::Board b, EndgameStats &stats, bool display);
-int best_move(board::Board b, EndgameStats &stats, int alpha, int beta);
 
-int eg_deep(board::Board b, int alpha, int beta, int empties, bool passed, long *n);
+SearchNode eg_deep(board::Board b, int alpha, int beta, int empties, bool passed, long *n, clock_t start, float time_limit);
 int eg_medium(board::Board b, int alpha, int beta, int empties, bool passed, long *n);
 int eg_shallow(board::Board b, int alpha, int beta, int empties, bool passed, long *n);
 

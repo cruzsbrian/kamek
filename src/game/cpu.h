@@ -3,10 +3,6 @@
 #include "../search/hashtable.h"
 
 
-#define DEPTH_100  -1
-#define DEPTH_100W -2
-
-
 struct SearchResult {
     int best_move;
     int depth;
