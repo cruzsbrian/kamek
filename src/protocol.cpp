@@ -8,18 +8,69 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+#include <unistd.h>
 
 
 using namespace std;
 
 
+void usage(char *argv[]) {
+    cerr << "Usage: " << argv[0] << " [-h] [-d DEPTH] [-t TIME] [-e EG_DEPTH] [-w WEIGHTS]" << endl << endl;
+    cerr << "\t-h: print this message" << endl;
+    cerr << "\t-d DEPTH: search to a maximum depth of DEPTH in midgame (int).\t\tDefault: 30" << endl;
+    cerr << "\t-t TIME: spend a maximum of TIME seconds on midgame search (float).\tDefault: 10.0" << endl;
+    cerr << "\t-e EG_DEPTH: start using endgame solver at depth EG_DEPTH (int).\tDefault: 23" << endl;
+    cerr << "\t-w WEIGHTS: load weights from the file at WEIGHTS (str).\t\tDefault: 'weights.txt'" << endl;
+}
+
+
 int main(int argc, char *argv[]) {
+    // Defaults
+    int max_depth = 30;
+    float max_time = 30.0;
+    int eg_depth = 23;
+    string weights_file;
+
+    // Parse command line args to set max_depth, max_time, and/or eg_depth
+    char optchar;
+    while ((optchar = getopt(argc, argv, "hd:t:e:w:")) != -1) {
+        switch (optchar) {
+            case 'h':
+                usage(argv);
+                exit(0);
+            case 'd':
+                cerr << "Setting depth to " << optarg << endl;
+                max_depth = std::stoi(optarg);
+                break;
+            case 't':
+                cerr << "Setting max time per move to " << optarg << endl;
+                max_time = std::stof(optarg);
+                break;
+            case 'e':
+                cerr << "Setting endgame depth to " << optarg << endl;
+                eg_depth = std::stoi(optarg);
+                break;
+            case 'w':
+                cerr << "Using weights file " << optarg << endl;
+                weights_file = optarg;
+                break;
+            default:
+                usage(argv);
+                exit(1);
+        }
+    }
+
+    if (weights_file.empty()) {
+        weights_file = "weights.txt";
+        cerr << "No weights file specified, using " << weights_file << endl;
+    }
+
+
     CPU *cpu;
     board::Board pos;
     float total_time = 240.; // Default to 4 minute match.
     float time_spent = 0.;
 
-    cerr << filesystem::current_path() << endl;
 
     while (cin) {
         // Read command from stdin
@@ -40,8 +91,8 @@ int main(int argc, char *argv[]) {
             cout << "botinfo authors Brian Cruz" << endl;
 
             // Initialize bot.
-            eval::load_weights("weights.txt");
-            cpu = new CPU(30, 30.0, 24);
+            eval::load_weights(weights_file);
+            cpu = new CPU(max_depth, max_time, eg_depth);
             pos = board::starting_position();
 
             // Send ready signal.

@@ -50,6 +50,11 @@ void load_weights(string filename) {
 
     cerr << "Loading weights...";
 
+    if (!weights_file.is_open()) {
+        cerr << "Could not open weights file" << endl;
+        exit(1);
+    }
+
     try {
         weights_file >> weight_intercept;
     } catch (...) {
