@@ -29,7 +29,7 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
         time_budget = max(min((time_left - 30.f) / moves_left, max_time), 0.01f);
     } else { // endgame search
         // Budget half of time remaining for search.
-        time_budget = time_left / 2.0;
+        time_budget = min(time_left / 2.f, max_time);
     }
 
     #ifdef PRINT_SEARCH_INFO
@@ -129,18 +129,16 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
             fmt::print(stderr, "TIMEOUT  {:.3f}s\n", time_spent);
             #endif
             break;
-        } else {
-            result = new_result;
         }
 
-        if (result.score >= beta) { // Fail-high: increase beta
+        if (new_result.score >= beta) { // Fail-high: increase beta
             beta = beta + ASP_WINDOW * 2;
 
             #ifdef PRINT_SEARCH_INFO
             fmt::print(stderr, "-- HIGH  {:.3f}s\n", time_spent);
             #endif
 
-        } else if (result.score <= alpha) { // Fail-low: decrease alpha
+        } else if (new_result.score <= alpha) { // Fail-low: decrease alpha
             alpha = alpha - ASP_WINDOW * 2;
 
             #ifdef PRINT_SEARCH_INFO
@@ -148,6 +146,8 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
             #endif
 
         } else { // alpha < score < beta: success
+            result = new_result;
+
             #ifdef PRINT_SEARCH_INFO
             fmt::print(stderr, "{} {:.3f} {:.3f}s\n",
                        move_to_notation(result.best_move), win_prob(result.score), time_spent);

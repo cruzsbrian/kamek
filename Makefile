@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Ofast -flto -lpthread -mbmi2 -DPRINT_SEARCH_INFO
+CXXFLAGS = -Wall -Ofast -flto -lpthread -mbmi2 -DPRINT_SEARCH_INFO
 LDFLAGS = -Ofast -lpthread -lfmt
 
 SRCDIR = src
@@ -76,7 +76,7 @@ compare_eval: $(addprefix $(OBJDIR)/, $(COMPEV_OBJS))
 
 $(OBJDIR)/%.o: $(SRCDIR)/$(notdir %.cpp)
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -rf wonky_kong cs2 cli board_eval $(OBJDIR)/*
