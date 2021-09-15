@@ -12,6 +12,9 @@ using namespace std;
 #define DEPTH_100  -1
 #define DEPTH_100W -2
 
+#define MOVE_PASS -1
+#define MOVE_NULL -2
+
 
 string move_to_notation(int move);
 int notation_to_move(const string &input);

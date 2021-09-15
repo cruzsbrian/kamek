@@ -1,6 +1,7 @@
 #include "hashtable.h"
 
 #include <cstdlib>
+#include <fmt/core.h>
 
 
 HashTable::HashTable() {

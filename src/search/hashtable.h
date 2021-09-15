@@ -4,7 +4,7 @@
 #include "../util.h"
 
 
-#define N_SLOTS 0x200000
+#define N_SLOTS  0x200000
 #define MAX_HASH 0x1fffff
 
 

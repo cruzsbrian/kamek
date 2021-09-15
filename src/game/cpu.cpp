@@ -2,8 +2,8 @@
 
 #include "../search/alphabeta.h"
 #include "../search/endgame.h"
+#include "../search/hashtable.h"
 #include "../eval/pattern_eval.h"
-#include "../util.h"
 
 #include <iostream>
 #include <fmt/core.h>
@@ -16,6 +16,8 @@ const int ASP_WINDOW = 125;
 
 
 SearchResult CPU::next_move(board::Board b, int ms_left) {
+    HashTable ht;
+
     int empties = 64 - board::popcount(b.own | b.opp);
 
     int moves_left = (empties - 20) / 2; // endgame solver after 20 is fast
@@ -114,7 +116,7 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
 
         // Try search in current window
         #ifdef PRINT_SEARCH_INFO
-        fmt::print(stderr, "depth {:2} ({:.2f}, {:.2f}) \t",
+        fmt::print(stderr, "depth {:2} ({:.2f}, {:.2f})   ",
                    depth, win_prob(alpha), win_prob(beta));
         #endif
         float time_limit = time_budget - total_time;

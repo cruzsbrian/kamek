@@ -52,7 +52,7 @@ SearchNode eg_deep(board::Board b, int alpha, int beta, int empties, bool passed
     if (move_mask == 0ULL) {
         if (passed) {
             int score = board::popcount(b.own) - board::popcount(b.opp);
-            return {empties, NodeType::PV, score, -1};
+            return {DEPTH_100, NodeType::PV, score, -1};
         } else {
             SearchNode result = eg_deep(board::Board{b.opp, b.own}, -beta, -alpha, empties, true, n, start, time_limit);
             if (result.type == NodeType::TIMEOUT) { // propagate timeouts back up

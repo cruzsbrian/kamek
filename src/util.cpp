@@ -7,7 +7,9 @@
 
 
 string move_to_notation(int move) {
-    if (move == -1) {
+    if (move == MOVE_NULL) {
+        return "null";
+    } else if (move == MOVE_PASS) {
         return "pass";
     } else {
         int row = move / 8 + 1;
@@ -29,8 +31,6 @@ int notation_to_move(const string &input) {
 
 
 float win_prob(int score) {
-    /* return (float)score / 50.; */
-
     float adj_score = float(score) / 500.;
     return 1 / (1 + exp(-adj_score));
 }

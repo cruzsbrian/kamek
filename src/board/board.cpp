@@ -268,19 +268,25 @@ int get_stable(Board b) {
         );
     }
 
-    return popcount(stable_own) - popcount(stable_opp);
+    *n_own = popcount(stable_own);
+    *n_opp = popcount(stable_opp);
+    /* return popcount(stable_own) - popcount(stable_opp); */
 }
 
 
 /*
  * Make-move: Makes a move for color c in position pos, and updates the board's
- * hash. Give -1 as pos for pass.  Gen is a one-hot long representing the added
- * piece. Filling from gen along opponent pieces and &-ing with rays in the
- * opposite direction from existing pieces gives only lines of opponent pieces
- * that have the new piece on one side and an existing own piece on the other
- * side.
+ * hash. Give -1 as pos for pass.
  */
 Board do_move(Board b, int pos) {
+    /*
+    * Gen is a one-hot long representing the added
+    * piece. Filling from gen along opponent pieces and &-ing with rays in the
+    * opposite direction from existing pieces gives only lines of opponent pieces
+    * that have the new piece on one side and an existing own piece on the other
+    * side.
+    */
+
     uint64_t gen, diff;
 
     /* -1 for pass. */
@@ -401,6 +407,9 @@ string to_str(const uint64_t mask) {
 }
 
 
+/*
+ * Counts the number of set bits in a 64-bit string.
+ */
 int popcount(uint64_t x) {
     /* const uint64_t m1  = 0x5555555555555555; */
     /* const uint64_t m2  = 0x3333333333333333; */
