@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "../board/board.h"
+#include "board.h"
 
 
 namespace eval {

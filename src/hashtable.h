@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../board/board.h"
-#include "../util.h"
+#include "board.h"
+#include "common.h"
 
 
 #define N_SLOTS  0x200000

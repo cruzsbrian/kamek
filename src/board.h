@@ -24,7 +24,7 @@ Board from_str(std::string position);
 
 uint64_t get_moves(Board b);
 int get_frontier(Board b);
-int get_stable(Board b);
+void get_stable(Board b, int *n_own, int *n_opp);
 
 Board do_move(Board b, int pos);
 Board add_piece(Board b, int pos, bool c);

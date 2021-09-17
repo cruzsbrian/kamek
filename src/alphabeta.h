@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../board/board.h"
-#include "../util.h"
+#include "board.h"
+#include "common.h"
 #include "hashtable.h"
 
 SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht, bool passed, long *n, clock_t start, float time_limit);

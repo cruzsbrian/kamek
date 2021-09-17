@@ -1,8 +1,9 @@
-obj/*
-data/*
-temp/*
+build/
+temp/
 .DS_Store
 tags
+.vscode/
+.nvimlog
 
 notes.xopp
 

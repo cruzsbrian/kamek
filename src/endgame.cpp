@@ -4,7 +4,7 @@
 #include <iostream>
 #include <climits>
 
-#include "../eval/pattern_eval.h"
+#include "pattern_eval.h"
 
 
 namespace endgame {

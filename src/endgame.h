@@ -1,5 +1,5 @@
-#include "../board/board.h"
-#include "../util.h"
+#include "board.h"
+#include "common.h"
 
 namespace endgame {
 

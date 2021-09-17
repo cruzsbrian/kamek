@@ -1,9 +1,9 @@
 #include "cpu.h"
 
-#include "../search/alphabeta.h"
-#include "../search/endgame.h"
-#include "../search/hashtable.h"
-#include "../eval/pattern_eval.h"
+#include "alphabeta.h"
+#include "endgame.h"
+#include "hashtable.h"
+#include "pattern_eval.h"
 
 #include <iostream>
 #include <fmt/core.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../util.h"
+#include "common.h"
 
 struct SearchResult {
     int best_move;

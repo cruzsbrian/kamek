@@ -234,7 +234,7 @@ int get_frontier(Board b) {
 }
 
 
-int get_stable(Board b) {
+void get_stable(Board b, int *n_own, int *n_opp) {
     const uint64_t top    = 0xff00000000000000;
     const uint64_t bottom = 0x00000000000000ff;
     const uint64_t left   = 0x0101010101010101;

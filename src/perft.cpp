@@ -1,4 +1,4 @@
-#include "board/board.h"
+#include "board.h"
 
 #include <iostream>
 #include <time.h>
@@ -8,7 +8,7 @@ long perft(board::Board b, int depth, bool passed, bool print) {
     uint64_t move_mask = board::get_moves(b);
 
     if (depth == 0) {
-        if (print) cout << board::to_str(b) << "\n";
+        /* if (print) cout << board::to_str(b) << "\n"; */
         return 1;
     }
 

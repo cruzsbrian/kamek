@@ -5,9 +5,9 @@
 #include <time.h>
 #include <climits>
 
-#include "board/board.h"
-#include "search/endgame.h"
-#include "util.h"
+#include "board.h"
+#include "endgame.h"
+#include "common.h"
 
 
 const bool DISPLAY = false;
@@ -64,10 +64,10 @@ void runtests(const string &filename) {
         /* cout << stats.time_spent << "\n"; */
 
         if (sgn(score) != sgn(pos.score)) {
-            /* cerr << board::to_str(pos.board) << " " << turn_str << "\n"; */
-            /* cerr << "Incorrect result: score " << score << ", solution " << pos.score << "\n"; */
+            cerr << board::to_str(pos.board) << " " << turn_str << "\n";
+            cerr << "Incorrect result: score " << score << ", solution " << pos.score << "\n";
 
-            /* incorrect++; */
+            incorrect++;
         }
 
         n_tests++;

@@ -4,7 +4,7 @@
 #include <vector>
 #include <time.h>
 
-#include "board/board.h"
+#include "board.h"
 
 using namespace std;
 

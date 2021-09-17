@@ -4,9 +4,9 @@
 #include <vector>
 #include <cmath>
 
-#include "../board/board.h"
-#include "../eval/pattern_eval.h"
-#include "../util.h"
+#include "board.h"
+#include "pattern_eval.h"
+#include "common.h"
 
 
 const unsigned PROGRESS_DOTS = 50;

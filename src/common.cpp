@@ -1,9 +1,7 @@
-#include "util.h"
+#include "common.h"
 
 #include <cmath>
 #include <iostream>
-
-#include "eval/simple_eval.h"
 
 
 string move_to_notation(int move) {

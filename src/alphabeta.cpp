@@ -6,7 +6,7 @@
 
 #include <fmt/core.h>
 
-#include "../eval/pattern_eval.h"
+#include "pattern_eval.h"
 
 
 const int DEEP_CUTOFF = 8;
