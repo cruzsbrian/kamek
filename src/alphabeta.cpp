@@ -12,17 +12,17 @@
 const int DEEP_CUTOFF = 8;
 const int MED_CUTOFF = 5;
 
-const int SORT_DEPTH_REDUCTION = 3;
+const int SORT_DEPTH_REDUCTION = 5;
 
 const int STATIC_EVAL_MARGIN_MEDIUM = 300;
 const int STATIC_EVAL_MARGIN_SHALLOW = 150;
 
 
-SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht, bool passed, long *n, clock_t start, float time_limit) {
-    (*n)++;
+SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, bool passed, SearchInfo &si) {
+    si.nodes++;
 
     // Check hashtable to avoid re-search.
-    SearchNode *table_entry = ht.get(b);
+    SearchNode *table_entry = si.ht->get(b);
     if (table_entry && table_entry->depth >= depth) {
         // If score is exact, return it.
         if (table_entry->type == NodeType::PV) return *table_entry;
@@ -44,30 +44,31 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
     }
 
     // Check for timeout.
-    if (get_time_since(start) >= time_limit) {
+    if (get_time_since(si.start) >= si.time_limit) {
         return {depth, NodeType::TIMEOUT, 0, MOVE_NULL};
     }
 
     int sort_depth = max(0, depth - SORT_DEPTH_REDUCTION);
-    vector<ScoredMove> moves = get_sorted_moves(b, sort_depth, ht, n);
+    vector<ScoredMove> moves = get_sorted_moves(b, sort_depth, si);
 
     if (moves.size() == 0) {
         if (passed) { // Game is over: solved node
             int score = INT_MAX * sgn(board::popcount(b.own) - board::popcount(b.opp));
-            ht.set(b, {depth, NodeType::PV, score, -1});
+            si.ht->set(b, {depth, NodeType::PV, score, -1});
             return {depth, NodeType::PV, score, -1};
         } else {
-            SearchNode result = ab_deep(board::Board{b.opp, b.own}, -beta, -alpha, depth, ht, true, n, start, time_limit);
+            SearchNode result = 
+                ab_deep(board::do_move(b, MOVE_PASS), -beta, -alpha, depth, true, si);
             if (result.type == NodeType::TIMEOUT) { // propagate timeouts back up
                 return {depth, NodeType::TIMEOUT, 0, MOVE_NULL};
             }
 
             int score = -result.score;
             if (score > alpha) {
-                ht.set(b, {depth, NodeType::PV, score, -1});
+                si.ht->set(b, {depth, NodeType::PV, score, -1});
                 return {depth, NodeType::PV, score, -1};
             } else {
-                ht.set(b, {depth, NodeType::LOW, alpha, -1});
+                si.ht->set(b, {depth, NodeType::LOW, alpha, -1});
                 return {depth, NodeType::LOW, alpha, -1};
             }
         }
@@ -81,9 +82,10 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
         int score;
 
         if (depth <= DEEP_CUTOFF) {
-            score = -ab_medium(m.after, -beta, -best_score, depth - 1, ht, false, n);
+            score = -ab_medium(m.after, -beta, -best_score, depth - 1, false, si);
         } else {
-            SearchNode result = ab_deep(m.after, -beta, -best_score, depth - 1, ht, false, n, start, time_limit);
+            SearchNode result = 
+                ab_deep(m.after, -beta, -best_score, depth - 1, false, si);
             if (result.type == NodeType::TIMEOUT) { // propagate timeouts back up
                 return {depth, NodeType::TIMEOUT, 0, MOVE_NULL};
             }
@@ -92,7 +94,7 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
         }
 
         if (score >= beta) {
-            ht.set(b, {depth, NodeType::HIGH, beta, m.move});
+            si.ht->set(b, {depth, NodeType::HIGH, beta, m.move});
             return {depth, NodeType::HIGH, beta, m.move};
         }
         if (score > best_score) {
@@ -102,24 +104,26 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, HashTable &ht
     }
 
     if (best_score > alpha) {
-        ht.set(b, {depth, NodeType::PV, best_score, best_move});
+        si.ht->set(b, {depth, NodeType::PV, best_score, best_move});
         return {depth, NodeType::PV, best_score, best_move};
     } else {
-        ht.set(b, {depth, NodeType::LOW, alpha, best_move});
+        si.ht->set(b, {depth, NodeType::LOW, alpha, best_move});
         return {depth, NodeType::LOW, alpha, best_move};
     }
 }
 
 
-int ab_medium(board::Board b, int alpha, int beta, int depth, HashTable &ht, bool passed, long *n) {
-    (*n)++;
+int ab_medium(board::Board b, int alpha, int beta, int depth, bool passed, SearchInfo &si) {
+    si.nodes++;
 
     // Static eval pruning
-    int static_score = eval::score(b);
-    if (static_score >= beta + STATIC_EVAL_MARGIN_MEDIUM) {
-        return static_score;
-    } else if (static_score <= alpha - STATIC_EVAL_MARGIN_MEDIUM) {
-        return static_score;
+    if (si.forward_prune) {
+        int static_score = eval::score(b);
+        if (static_score >= beta + STATIC_EVAL_MARGIN_MEDIUM) {
+            return static_score;
+        } else if (static_score <= alpha - STATIC_EVAL_MARGIN_MEDIUM) {
+            return static_score;
+        }
     }
 
     if (depth == 0) {
@@ -127,19 +131,19 @@ int ab_medium(board::Board b, int alpha, int beta, int depth, HashTable &ht, boo
     }
 
     int sort_depth = max(0, depth - SORT_DEPTH_REDUCTION);
-    vector<ScoredMove> moves = get_sorted_moves(b, sort_depth, ht, n);
+    vector<ScoredMove> moves = get_sorted_moves(b, sort_depth, si);
 
     if (moves.size() == 0) {
         if (passed) return INT_MAX * sgn(board::popcount(b.own) - board::popcount(b.opp));
-        return -ab_medium(board::Board{b.opp, b.own}, -beta, -alpha, depth, ht, true, n);
+        return -ab_medium(board::do_move(b, MOVE_PASS), -beta, -alpha, depth, true, si);
     }
 
     for (auto m : moves) {
         int score;
         if (depth <= MED_CUTOFF) {
-            score = -ab(m.after, -beta, -alpha, depth - 1, false, n);
+            score = -ab(m.after, -beta, -alpha, depth - 1, false, si);
         } else {
-            score = -ab_medium(m.after, -beta, -alpha, depth - 1, ht, false, n);
+            score = -ab_medium(m.after, -beta, -alpha, depth - 1, false, si);
         }
 
         if (score >= beta) return beta;
@@ -150,15 +154,17 @@ int ab_medium(board::Board b, int alpha, int beta, int depth, HashTable &ht, boo
 }
 
 
-int ab(board::Board b, int alpha, int beta, int depth, bool passed, long *n) {
-    (*n)++;
+int ab(board::Board b, int alpha, int beta, int depth, bool passed, SearchInfo &si) {
+    si.nodes++;
 
     // Static eval pruning
-    int static_score = eval::score(b);
-    if (static_score > beta + STATIC_EVAL_MARGIN_SHALLOW) {
-        return static_score;
-    } else if (static_score < alpha - STATIC_EVAL_MARGIN_SHALLOW) {
-        return static_score;
+    if (si.forward_prune) {
+        int static_score = eval::score(b);
+        if (static_score > beta + STATIC_EVAL_MARGIN_SHALLOW) {
+            return static_score;
+        } else if (static_score < alpha - STATIC_EVAL_MARGIN_SHALLOW) {
+            return static_score;
+        }
     }
 
     if (depth == 0) {
@@ -169,14 +175,14 @@ int ab(board::Board b, int alpha, int beta, int depth, bool passed, long *n) {
 
     if (move_mask == 0ULL) {
         if (passed) return INT_MAX * sgn(board::popcount(b.own) - board::popcount(b.opp));
-        return -ab(board::Board{b.opp, b.own}, -beta, -alpha, depth, true, n);
+        return -ab(board::do_move(b, MOVE_PASS), -beta, -alpha, depth, true, si);
     }
 
     while (move_mask != 0ULL) {
         int m = __builtin_ctzll(move_mask);
         move_mask &= move_mask - 1;
 
-        int score = -ab(board::do_move(b, m), -beta, -alpha, depth - 1, false, n);
+        int score = -ab(board::do_move(b, m), -beta, -alpha, depth - 1, false, si);
 
         if (score >= beta) return beta;
         if (score > alpha) alpha = score;
@@ -186,13 +192,11 @@ int ab(board::Board b, int alpha, int beta, int depth, bool passed, long *n) {
 }
 
 
-vector<ScoredMove> get_sorted_moves(board::Board b, int depth, HashTable &ht, long *n) {
+vector<ScoredMove> get_sorted_moves(board::Board b, int depth, SearchInfo &si) {
     vector<ScoredMove> ret;
 
     uint64_t move_mask = board::get_moves(b);
 
-    long nodes = 0L;
-    clock_t start = clock();
     while (move_mask != 0ULL) {
         int m = __builtin_ctzll(move_mask);
         move_mask &= move_mask - 1;
@@ -202,23 +206,21 @@ vector<ScoredMove> get_sorted_moves(board::Board b, int depth, HashTable &ht, lo
         // Check hashtable for stored score. Only take exact scores.
         // If none found, search to depth given to get score.
         int score;
-        SearchNode *table_entry = ht.get(after);
+        SearchNode *table_entry = si.ht->get(after);
         if (table_entry && table_entry->type == NodeType::PV) {
             score = table_entry->score;
         } else {
             if (depth >= DEEP_CUTOFF) {
-                score = ab_deep(after, -INT_MAX, INT_MAX, depth, ht, false, &nodes, start, 10.0).score;
+                score = ab_deep(after, -INT_MAX, INT_MAX, depth, false, si).score;
             } else if (depth >= MED_CUTOFF) {
-                score = ab_medium(after, -INT_MAX, INT_MAX, depth, ht, false, &nodes);
+                score = ab_medium(after, -INT_MAX, INT_MAX, depth, false, si);
             } else {
-                score = ab(after, -INT_MAX, INT_MAX, depth, false, &nodes);
+                score = ab(after, -INT_MAX, INT_MAX, depth, false, si);
             }
         }
 
         ret.push_back(ScoredMove{m, score, after});
     }
-
-    (*n) += nodes;
 
     std::sort(ret.begin(), ret.end());
     return ret;

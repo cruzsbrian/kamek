@@ -111,8 +111,6 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
     SearchNode result;
     while (total_time + time_spent * branch_factor < time_budget &&
            depth <= max_depth && depth <= empties) {
-        clock_t start = clock();
-        long nodes = 0L;
 
         // Try search in current window
         #ifdef PRINT_SEARCH_INFO
@@ -120,11 +118,12 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
                    depth, win_prob(alpha), win_prob(beta));
         #endif
         float time_limit = time_budget - total_time;
-        SearchNode new_result = ab_deep(b, alpha, beta, depth, ht, false, &nodes, start, time_limit);
+        SearchInfo si(&ht, time_limit, true);
+        SearchNode new_result = ab_deep(b, alpha, beta, depth, false, si);
 
-        time_spent = get_time_since(start);
+        time_spent = get_time_since(si.start);
         total_time += time_spent;
-        total_nodes += nodes;
+        total_nodes += si.nodes;
 
         if (new_result.type == TIMEOUT) {
             #ifdef PRINT_SEARCH_INFO
@@ -155,7 +154,7 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
                        move_to_notation(result.best_move), win_prob(result.score), time_spent);
             #endif
 
-            branch_factor = pow((float)nodes, 1 / (float)depth);
+            branch_factor = pow((float)si.nodes, 1 / (float)depth);
 
             // Set aspiration window around result for next search.
             alpha = result.score - ASP_WINDOW;
