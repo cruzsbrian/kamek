@@ -18,7 +18,7 @@ struct Options {
     int cs2;
 };
 
-const Options default_opts = {30, 60.0, 24, "weights.txt", 0};
+const Options default_opts = {30, 15.0, 24, "weights.txt", 0};
 
 
 void usage(char *argv[]) {
@@ -110,12 +110,6 @@ bool is_move_legal(board::Board b, int move) {
     return valid;
 }
 
-enum CmdType { UNDO, GO, QUIT, MOVE };
-struct Command {
-  CmdType type;
-  string name;
-};
-
 bool game_over(board::Board b, bool color) {
     uint64_t move_mask = board::get_moves(b);
     if (move_mask != 0ULL) return false;
@@ -134,7 +128,7 @@ bool game_over(board::Board b, bool color) {
 void cli_play(Options opts) {
     board::Board board = board::starting_position();
     eval::load_weights(opts.weights_file);
-    CPU cpu{opts.max_depth, opts.max_time, opts.eg_depth};
+    CPU cpu{opts.max_depth, opts.max_time, opts.eg_depth, true};
     vector<board::Board> history;
     bool turn = BLACK;
 
@@ -170,7 +164,7 @@ void cli_play(Options opts) {
         } else if (command == "q" || command == "quit") { // Quit command.
             break;
         } else if (!is_notation_valid(command)) { // Check if valid notation.
-            cout << "'" << command << "' is not a valid move or 'undo'\n";
+            cout << "'" << command << "' is not a valid command or move\n";
         } else { // If valid notation, make move.
             int move = notation_to_move(command);
 
@@ -197,61 +191,41 @@ void cli_play(Options opts) {
 
 
 
-bool read_cs2_move(int *move, int *ms_left) {
-    int row, col;
-
-    if (!(cin >> col >> row >> *ms_left)) {
-        return false;
-    }
-
-    if (row == -1 && col == -1) *move = -1;
-    else *move = row * 8 + col;
-
-    return true;
-}
-
-void print_cs2_move(int move) {
-    int row, col;
-
-    if (move == -1) {
-        cout << "-1 -1\n";
-        return;
-    }
-
-    row = move / 8;
-    col = move % 8;
-
-    cout << col << " " << row << "\n";
-}
-
 void cs2_play(Options opts, bool bot_color) {
     cerr << "Using CS2 mode." << endl;
 
     board::Board b = board::starting_position();
     eval::load_weights(opts.weights_file);
-    CPU cpu{opts.max_depth, opts.max_time, opts.eg_depth};
+    CPU cpu{opts.max_depth, opts.max_time, opts.eg_depth, true};
 
     cout << "Init done.\n";
 
-    int ms_left;
-    int opp_move;
+    int col, row, ms_left;
+    bool first_move = true;
 
-    // The first move sent to us is nothing if we're black
-    read_cs2_move(&opp_move, &ms_left);
+    while (cin >> col >> row >> ms_left) {
+        // Parse opponent move
+        int opp_move;
+        if (row == -1 && col == -1) opp_move = MOVE_PASS;
+        else opp_move = row * 8 + col;
 
-    if (bot_color != BLACK) {
-        b = board::do_move(b, opp_move);
-    }
+        // If we're playing black, the first move received will be pass, so we need
+        // to ignore it.
+        if (!(first_move && opp_move == MOVE_PASS)) {
+            b = board::do_move(b, opp_move);
+        }
 
-    while (true) {
         int bot_move = cpu.next_move(b, ms_left).best_move;
-
-        print_cs2_move(bot_move);
-
         b = board::do_move(b, bot_move);
 
-        if (!read_cs2_move(&opp_move, &ms_left)) break;
-        b = board::do_move(b, opp_move);
+        // Print bot move
+        if (bot_move == -1) {
+            cout << "-1 -1" << endl;
+        } else {
+            row = bot_move / 8;
+            col = bot_move % 8;
+            cout << col << " " << row << endl;
+        }
     }
 }
 

@@ -14,10 +14,15 @@ struct SearchResult {
 
 class CPU {
 public:
-    CPU(int s, float t, int e): max_depth(s), max_time(t), endgame_depth(e) {};
+    CPU(int s, float t, int e, bool p):
+        max_depth(s),
+        max_time(t),
+        endgame_depth(e),
+        print_search_info(p) {};
     SearchResult next_move(board::Board b, int ms_left);
 private:
-    int max_depth;
+    const int max_depth;
     const float max_time;
-    int endgame_depth;
+    const int endgame_depth;
+    const bool print_search_info;
 };

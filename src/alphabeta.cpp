@@ -14,8 +14,8 @@ const int MED_CUTOFF = 5;
 
 const int SORT_DEPTH_REDUCTION = 5;
 
-const int STATIC_EVAL_MARGIN_MEDIUM = 300;
-const int STATIC_EVAL_MARGIN_SHALLOW = 150;
+const int STATIC_EVAL_MARGIN_MEDIUM = 350;
+const int STATIC_EVAL_MARGIN_SHALLOW = 200;
 
 
 SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, bool passed, SearchInfo &si) {

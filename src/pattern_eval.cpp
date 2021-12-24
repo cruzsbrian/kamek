@@ -48,8 +48,6 @@ int score(board::Board b) {
 void load_weights(string filename) {
     ifstream weights_file(filename);
 
-    cerr << "Loading weights...";
-
     if (!weights_file.is_open()) {
         cerr << "Could not open weights file" << endl;
         exit(1);
@@ -70,8 +68,6 @@ void load_weights(string filename) {
             exit(1);
         }
     }
-
-    cerr << "done\n";
 }
 
 

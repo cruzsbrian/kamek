@@ -30,12 +30,14 @@ template <typename T> int sgn(T val) {
 
 
 // Node types:
-// PV: principal variation, score is exact
-// HIGH: search failed high, score is lower bound
-// LOW: search failed low, score is upper bound
-// TIMEOUT: search timed out, score and bestmove are invalid
+// PV: principal variation, score is exact.
+// HIGH: search failed high, score is lower bound.
+// LOW: search failed low, score is upper bound.
+// TIMEOUT: search timed out, score and bestmove are invalid.
 enum NodeType { PV, HIGH, LOW, TIMEOUT };
 
+// Result of a search.
+// Score and best_move may be invalid depending on type.
 struct SearchNode {
     int depth;
     NodeType type;
@@ -44,6 +46,9 @@ struct SearchNode {
 };
 
 
+// A move, combined with score and the board after the move is made.
+// Note score corresponds to the position *after* the move, so the "best" move
+// has the lowest score.
 struct ScoredMove {
     int move;
     int score;

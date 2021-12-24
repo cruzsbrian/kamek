@@ -365,7 +365,7 @@ string to_grid_moves(Board b, bool color) {
             } else if ((b.opp >> pos) & 1L) {
                 ret += "O ";
             } else if ((move_mask >> pos) & 1L) {
-                ret += "+ ";
+                ret += "_ ";
             } else {
                 ret += ". ";
             }

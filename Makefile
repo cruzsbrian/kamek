@@ -1,6 +1,6 @@
-CPPFLAGS = -DPRINT_SEARCH_INFO
-CXXFLAGS = -Wall -Ofast -flto -mbmi2
-LDFLAGS = -Ofast -lfmt
+CPPFLAGS += -march=native
+CXXFLAGS = -Wall -g -O3 -flto -mbmi2
+LDFLAGS = -g -O3 -lfmt
 
 vpath %.cpp src
 
@@ -17,7 +17,7 @@ MAIN_OBJS = $(addprefix $(OBJDIR)/, $(MAIN_SRCS:.cpp=.o))
 all: wonky_kong
 
 wonky_kong: $(MAIN_OBJS)
-	$(CXX) $(LDFLAGS) $^ -o $@
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p build
