@@ -15,7 +15,7 @@ const unsigned PROGRESS_DOTS = 50;
 
 
 
-void runtests(const string &filename) {
+void runtests(const string &filename, int empties_wanted) {
     ifstream ffo_file(filename);
 
     // Collect all the positions from the file
@@ -31,7 +31,8 @@ void runtests(const string &filename) {
             score_sol = -score_sol;
         }
 
-        positions.push_back({b, score_sol});
+        int pos_empties = 64 - board::popcount(b.own | b.opp);
+        if (pos_empties == empties_wanted) positions.push_back({b, score_sol});
     }
 
 
@@ -88,25 +89,27 @@ void runtests(const string &filename) {
     cerr << (float)total_nodes << " nodes in " << total_time << "s @ " << nps << " node/s" << "\n";
 
     float avg_time = total_time / (float)positions.size();
-    cerr << "Mean time: " << avg_time << "s\n";
+    cerr << "Avg time: " << avg_time << "s\n";
     cerr << "Max time: " << max_time << "s\n";
     /* cerr << "Min time: " << min_time << "s\n"; */
+
+    cerr << "Avg nodes: " << (double)total_nodes / (double)positions.size() << endl;
 
     cerr << "Total incorrect: " << incorrect << "\n";
 }
 
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        cerr << "usage: eg_tests positions_file ..." << "\n";
+    if (argc < 3) {
+        cerr << "usage: eg_tests empties positions_file ..." << "\n";
         exit(1);
     }
 
-    for (int i = 1; i < argc; i++) {
+    int empties = stoi(argv[1]);
+
+    for (int i = 2; i < argc; i++) {
         cerr << "Running " << argv[i] << "\n";
-
-        runtests(argv[i]);
-
+        runtests(argv[i], empties);
         cerr << "\n";
     }
 }
