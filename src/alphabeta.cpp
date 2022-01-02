@@ -94,8 +94,8 @@ SearchNode ab_deep(board::Board b, int alpha, int beta, int depth, bool passed, 
         }
 
         if (score >= beta) {
-            si.ht->set(b, {depth, NodeType::HIGH, beta, m.move});
-            return {depth, NodeType::HIGH, beta, m.move};
+            si.ht->set(b, {depth, NodeType::HIGH, score, m.move});
+            return {depth, NodeType::HIGH, score, m.move};
         }
         if (score > best_score) {
             best_score = score;
@@ -146,7 +146,7 @@ int ab_medium(board::Board b, int alpha, int beta, int depth, bool passed, Searc
             score = -ab_medium(m.after, -beta, -alpha, depth - 1, false, si);
         }
 
-        if (score >= beta) return beta;
+        if (score >= beta) return score;
         if (score > alpha) alpha = score;
     }
 
@@ -184,7 +184,7 @@ int ab(board::Board b, int alpha, int beta, int depth, bool passed, SearchInfo &
 
         int score = -ab(board::do_move(b, m), -beta, -alpha, depth - 1, false, si);
 
-        if (score >= beta) return beta;
+        if (score >= beta) return score;
         if (score > alpha) alpha = score;
     }
 

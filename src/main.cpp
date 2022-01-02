@@ -152,7 +152,7 @@ void cli_play(Options opts) {
             }
         } else if (command == "go") { // Go command.
             // Get CPU move
-            int move = cpu.next_move(board, -1).best_move;
+            int move = cpu.next_move(board, -1).node.best_move;
             board = board::do_move(board, move);
             history.push_back(board);
             turn = !turn;
@@ -215,7 +215,7 @@ void cs2_play(Options opts, bool bot_color) {
             b = board::do_move(b, opp_move);
         }
 
-        int bot_move = cpu.next_move(b, ms_left).best_move;
+        int bot_move = cpu.next_move(b, ms_left).node.best_move;
         b = board::do_move(b, bot_move);
 
         // Print bot move
