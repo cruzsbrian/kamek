@@ -18,7 +18,7 @@ void pattern_activations(int ret[N_ALL_MASKS], board::Board b) {
         uint64_t own_bits = pext(b.own, mask);
         uint64_t opp_bits = pext(b.opp, mask);
 
-        int instance = ternary_twos[own_bits] + ternary_ones[opp_bits];
+        int instance =  2 * ternary_ones[own_bits] + ternary_ones[opp_bits];
         ret[mask_idx] = instance;
     }
 }
@@ -34,7 +34,7 @@ int score(board::Board b) {
         uint64_t opp_bits = pext(b.opp, mask);
 
         // Determine index into weights array from pattern and instance
-        uint16_t instance = ternary_twos[own_bits] + ternary_ones[opp_bits];
+        uint16_t instance =  2 * ternary_ones[own_bits] + ternary_ones[opp_bits];
         uint8_t pattern = mask_base[mask_idx]; 
         uint16_t weight_idx = pattern_start[pattern] + instance;
 
@@ -68,6 +68,8 @@ void load_weights(string filename) {
             exit(1);
         }
     }
+
+    weights_file.close();
 }
 
 
