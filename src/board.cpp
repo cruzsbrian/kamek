@@ -377,19 +377,24 @@ string to_grid_moves(Board b, bool color) {
 }
 
 
-string to_str(Board b) {
+string to_str(Board b, bool color) {
     string ret = "";
 
     for (auto i = 0; i < 64; i++) {
         bool own = (b.own >> i) & 1L;
         bool opp = (b.opp >> i) & 1L;
 
-        if (own) ret += "X";
-        else if (opp) ret += "O";
+        if (own) ret += color ? "O" : "X";
+        else if (opp) ret += color ? "X" : "O";
         else ret += "-";
     }
 
     return ret;
+}
+
+
+string to_str(Board b) {
+    return to_str(b, false);
 }
 
 

@@ -18,11 +18,8 @@ const int ASP_WINDOW = 125;
 SearchResult CPU::next_move(board::Board b, int ms_left) {
     int empties = 64 - board::popcount(b.own | b.opp);
 
-    if (print_search_info) {
-        cerr << "\n=======================|   WONKY_KONG   |=======================\n";
-        cerr << board::to_str(b) << endl;
-        fmt::print(stderr, "{} empties, allocating ", empties);
-    }
+    if (print_search_info) fmt::print(stderr, "{} empties, allocating ", empties);
+    
 
     double time_budget;
     bool try_endgame;
@@ -42,8 +39,10 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
         // If solving would take too long, adjust for midgame searches.
         try_endgame = eg_time < time_left && eg_time < max_time;
         if (try_endgame) {
-            time_budget = max(min(time_left * 0.9, max_time), 0.001);
+            // Endgame: allocate 80% of remaining time to this move (no more than max_time, no less than 1ms).
+            time_budget = max(min(time_left * 0.8, max_time), 0.001);
         } else {
+            // Midgame: reduce endgame depth until estimated endgame time is less than 3x midgame time.
             do {
                 eg_empties -= 2;
                 eg_time = est_eg_time(eg_empties);
@@ -78,16 +77,18 @@ SearchResult CPU::search(board::Board b, int empties, double time_budget, bool t
 
     // Endagme search
     if (try_endgame) {
+        double eg_budget = time_budget * 0.8;
+
         // Try WLD search first
-        SearchNode wld_result = endgame_search(b, empties, time_budget * 0.75, &nodes, true);
+        SearchNode wld_result = endgame_search(b, empties, eg_budget, &nodes, true);
 
         if (wld_result.type != NodeType::TIMEOUT) {
             // If draw (meaning score is exact), return immediately
             if (wld_result.score == 0) return {wld_result, nodes, get_time_since(start)};
 
             // Otherwise, try full search if we have time
-            if (get_time_since(start) * 10.0 < time_budget) {
-                SearchNode full_result = endgame_search(b, empties, time_budget - get_time_since(start), &nodes, false);
+            if (get_time_since(start) * 10.0 < eg_budget) {
+                SearchNode full_result = endgame_search(b, empties, eg_budget - get_time_since(start), &nodes, false);
 
                 if (full_result.type != NodeType::TIMEOUT) {
                     return {full_result, nodes, get_time_since(start)};
@@ -122,12 +123,12 @@ SearchNode CPU::midgame_search(board::Board b, int empties, double time_limit, l
     double last_time = 0.0;
     double branch_factor = 3.0;
 
-    int depth = 1;
+    int depth = 2;
 
     SearchNode result;
     while (time_spent + last_time * branch_factor < time_limit &&
            depth <= max_depth && depth <= empties) {
-        
+
         // Try search in current window
         if (print_search_info) {
             fmt::print(stderr, "depth {:2} ({:.2f}, {:.2f})   ",
@@ -143,7 +144,7 @@ SearchNode CPU::midgame_search(board::Board b, int empties, double time_limit, l
 
         if (new_result.type == TIMEOUT) {
             if (print_search_info) {
-                fmt::print(stderr, "TIMEOUT  {:.3f}s\n", time_spent);
+                fmt::print(stderr, "TIMEOUT  {:.3f}s\n", last_time);
             }
             break;
         }
@@ -153,8 +154,8 @@ SearchNode CPU::midgame_search(board::Board b, int empties, double time_limit, l
             result = new_result;
             
             if (print_search_info) {
-                if (result.score == INT_MAX) fmt::print(stderr, "win      {:.3f}s\n", time_spent);
-                else fmt::print(stderr, "loss     {:.3f}s\n", time_spent);
+                if (result.score == INT_MAX) fmt::print(stderr, "win      {:.3f}s\n", last_time);
+                else fmt::print(stderr, "loss     {:.3f}s\n", last_time);
             }
 
             break;
@@ -164,14 +165,14 @@ SearchNode CPU::midgame_search(board::Board b, int empties, double time_limit, l
             beta = beta + ASP_WINDOW * 2;
 
             if (print_search_info) {
-                fmt::print(stderr, "-- HIGH  {:.3f}s\n", time_spent);
+                fmt::print(stderr, "-- HIGH  {:.3f}s\n", last_time);
             }
 
         } else if (new_result.score <= alpha && new_result.score != -INT_MAX) { // Fail-low: decrease alpha
             alpha = alpha - ASP_WINDOW * 2;
 
             if (print_search_info) {
-                fmt::print(stderr, "-- LOW   {:.3f}s\n", time_spent);
+                fmt::print(stderr, "-- LOW   {:.3f}s\n", last_time);
             }
 
         } else { // alpha < score < beta: success
@@ -179,7 +180,7 @@ SearchNode CPU::midgame_search(board::Board b, int empties, double time_limit, l
 
             if (print_search_info) {
                 fmt::print(stderr, "{} {:.3f} {:.3f}s\n",
-                        move_to_notation(result.best_move), win_prob(result.score), time_spent);
+                        move_to_notation(result.best_move), win_prob(result.score), last_time);
             }
 
             branch_factor = pow((float)si.nodes, 1 / (float)depth);
@@ -220,13 +221,12 @@ SearchNode CPU::endgame_search(board::Board b, int empties, double time_limit, l
         if (result.type == NodeType::TIMEOUT) {
             fmt::print(stderr, "TIMEOUT  {:.3f}s\n", time_spent);
         } else {
-            fmt::print(stderr, "{} ", move_to_notation(result.best_move));
             if (wld) {
-                if (result.score > 0) fmt::print(stderr, "win\n");
-                else if (result.score < 0) fmt::print(stderr, "loss\n");
-                else fmt::print(stderr, "draw\n");
+                if (result.score > 0) fmt::print(stderr, "{} win   {:.3f}s\n", move_to_notation(result.best_move), time_spent);
+                else if (result.score < 0) fmt::print(stderr, "loss     {:.3f}s\n", time_spent);
+                else fmt::print(stderr, "draw     {:.3f}s\n", time_spent);
             } else {
-                fmt::print(stderr, "score {}\n", result.score);
+                fmt::print(stderr, "{} {:+3}   {:.3f}s\n", move_to_notation(result.best_move), result.score, time_spent);
             }
         }
     }
@@ -240,18 +240,13 @@ SearchNode CPU::endgame_search(board::Board b, int empties, double time_limit, l
  */
 double CPU::est_eg_time(int empties) {
     double nodes = 2.62e-3 * exp(1.13 * (double)empties);
-    return nodes / (avg_nps() * 3);   // endgame is faster than midgame search
+    return nodes / avg_nps();   // endgame is faster than midgame search
 }
 
 /**
- * Estimates the number of empties that can be WLD solved in a given amount of time. Rounded down.
+ * Gives average nodes/second over all searches so far.
  */
-int CPU::est_eg_empties(double time) {
-    double nodes = time * avg_nps() * 3;
-    return (int) (0.885 * log(381.7 * nodes));
-}
-
 double CPU::avg_nps() {
-    if (total_time == 0) return 1e6; // arbitrary estimate for when there's no data
+    if (total_time == 0 || total_nodes == 0) return 1e7; // arbitrary estimate for when there's no data
     return (double)total_nodes / total_time;
 }

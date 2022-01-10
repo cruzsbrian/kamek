@@ -9,6 +9,10 @@
 using namespace std;
 
 
+#define BLACK false
+#define WHITE true
+
+
 #define DEPTH_100  -1
 #define DEPTH_100W -2
 

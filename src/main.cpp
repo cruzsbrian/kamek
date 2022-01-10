@@ -6,10 +6,6 @@
 #include "cpu.h"
 
 
-#define BLACK false
-#define WHITE true
-
-
 struct Options {
     int max_depth;
     float max_time;
@@ -214,6 +210,14 @@ void cs2_play(Options opts, bool bot_color) {
         if (!(first_move && opp_move == MOVE_PASS)) {
             b = board::do_move(b, opp_move);
         }
+
+        cerr << "\n=======================|   WONKY_KONG   |=======================\n";
+        cerr << board::to_str(b, bot_color) << endl;
+        cerr << "playing for " << (bot_color ? "white" : "black");
+        if (!first_move) cerr << " (opponent played " << move_to_notation(opp_move) << ")" << endl;
+        else cerr << endl;
+
+        first_move = false;
 
         int bot_move = cpu.next_move(b, ms_left).node.best_move;
         b = board::do_move(b, bot_move);
