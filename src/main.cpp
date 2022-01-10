@@ -3,6 +3,7 @@
 #include <getopt.h>
 
 #include "pattern_eval.h"
+#include "book.h"
 #include "cpu.h"
 
 
@@ -124,7 +125,10 @@ bool game_over(board::Board b, bool color) {
 void cli_play(Options opts) {
     board::Board board = board::starting_position();
     eval::load_weights(opts.weights_file);
+    book::load_book("book_black.txt");
+    book::load_book("book_white.txt");
     CPU cpu{opts.max_depth, opts.max_time, opts.eg_depth, true};
+
     vector<board::Board> history;
     bool turn = BLACK;
 
@@ -192,6 +196,8 @@ void cs2_play(Options opts, bool bot_color) {
 
     board::Board b = board::starting_position();
     eval::load_weights(opts.weights_file);
+    book::load_book("book_black.txt");
+    book::load_book("book_white.txt");
     CPU cpu{opts.max_depth, opts.max_time, opts.eg_depth, true};
 
     cout << "Init done.\n";

@@ -4,6 +4,7 @@
 #include "endgame.h"
 #include "hashtable.h"
 #include "pattern_eval.h"
+#include "book.h"
 
 #include <iostream>
 #include <fmt/core.h>
@@ -74,6 +75,13 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
 SearchResult CPU::search(board::Board b, int empties, double time_budget, bool try_endgame) {
     long nodes = 0L;
     clock_t start = clock();
+
+    // Opening book
+    int book_move = book::search(b);
+    if (book_move != MOVE_NULL) {
+        if (print_search_info) fmt::print(stderr, "opening book   {}\n", move_to_notation(book_move));
+        return {{0, NodeType::PV, 0, book_move}, 0, get_time_since(start)};
+    }
 
     // Endagme search
     if (try_endgame) {

@@ -12,7 +12,5 @@ data/
 weights.txt
 
 wonky_kong
-cli
-cs2
-board_eval
 eg_test
+gen_book
