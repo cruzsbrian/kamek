@@ -65,8 +65,8 @@ void runtests(const string &filename, int empties_wanted) {
         /* cout << stats.time_spent << "\n"; */
 
         if (sgn(score) != sgn(pos.score)) {
-            cerr << board::to_str(pos.board) << " " << turn_str << "\n";
-            cerr << "Incorrect result: score " << score << ", solution " << pos.score << "\n";
+            // cerr << board::to_str(pos.board) << " " << turn_str << "\n";
+            // cerr << "Incorrect result: score " << score << ", solution " << pos.score << "\n";
 
             incorrect++;
         }

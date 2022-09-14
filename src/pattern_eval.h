@@ -36,7 +36,7 @@ inline uint64_t pext(uint64_t src, uint64_t mask);
 #define HORVERT_4 8
 
 // Base set of patterns
-const uint64_t base_masks[N_PATTERNS] = {
+const uint64_t masks[N_PATTERNS] = {
     0x1020408000000000, // diag 4
     0x0810204080000000, // diag 5
     0x0408102040800000, // diag 6
@@ -53,60 +53,6 @@ const uint16_t n_instances[N_PATTERNS] = { 81, 243, 729, 2187, 6561, 6561, 6561,
 
 const uint16_t pattern_start[N_PATTERNS] = { 0, 81, 324, 1053, 3240, 9801, 16362, 22923, 29484 };
 const uint16_t total_instances = 36045; 
-
-// Flipped masks
-const uint64_t all_masks[N_ALL_MASKS] = {
-    // Diagonal-aligned masks
-    base_masks[DIAG_4],
-    flip_adiag(base_masks[DIAG_4]),
-    flip_vert(base_masks[DIAG_4]),
-    flip_horiz(base_masks[DIAG_4]),
-    base_masks[DIAG_5],
-    flip_adiag(base_masks[DIAG_5]),
-    flip_vert(base_masks[DIAG_5]),
-    flip_horiz(base_masks[DIAG_5]),
-    base_masks[DIAG_6],
-    flip_adiag(base_masks[DIAG_6]),
-    flip_vert(base_masks[DIAG_6]),
-    flip_horiz(base_masks[DIAG_6]),
-    base_masks[DIAG_7],
-    flip_adiag(base_masks[DIAG_7]),
-    flip_vert(base_masks[DIAG_7]),
-    flip_horiz(base_masks[DIAG_7]),
-    base_masks[DIAG_8],
-    flip_vert(base_masks[DIAG_8]),
-
-    // Edge-aligned masks
-    base_masks[HORVERT_1],
-    flip_vert(base_masks[HORVERT_1]),
-    flip_diag(base_masks[HORVERT_1]),
-    flip_adiag(base_masks[HORVERT_1]),
-    base_masks[HORVERT_2],
-    flip_vert(base_masks[HORVERT_2]),
-    flip_diag(base_masks[HORVERT_2]),
-    flip_adiag(base_masks[HORVERT_2]),
-    base_masks[HORVERT_3],
-    flip_vert(base_masks[HORVERT_3]),
-    flip_diag(base_masks[HORVERT_3]),
-    flip_adiag(base_masks[HORVERT_3]),
-    base_masks[HORVERT_4],
-    flip_vert(base_masks[HORVERT_4]),
-    flip_diag(base_masks[HORVERT_4]),
-    flip_adiag(base_masks[HORVERT_4])
-};
-
-// Maps index of flipped mask to base mask
-const uint8_t mask_base[N_ALL_MASKS] = {
-    DIAG_4, DIAG_4, DIAG_4, DIAG_4,
-    DIAG_5, DIAG_5, DIAG_5, DIAG_5,
-    DIAG_6, DIAG_6, DIAG_6, DIAG_6,
-    DIAG_7, DIAG_7, DIAG_7, DIAG_7,
-    DIAG_8, DIAG_8,
-    HORVERT_1, HORVERT_1, HORVERT_1, HORVERT_1,
-    HORVERT_2, HORVERT_2, HORVERT_2, HORVERT_2,
-    HORVERT_3, HORVERT_3, HORVERT_3, HORVERT_3,
-    HORVERT_4, HORVERT_4, HORVERT_4, HORVERT_4
-};
 
 
 // Conversion from binary masks to ternary indices

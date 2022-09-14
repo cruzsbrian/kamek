@@ -18,7 +18,7 @@ void load_book(const string &filename);
 
 int search(board::Board b);
     
-void build_book(queue<board::Board> &pos_queue, double time_limit, int depth);
+void build_book(const string &filename, queue<board::Board> &pos_queue, int depth, int plies);
 void write_book(const string &filename);
 
 } // namespace book

@@ -4,9 +4,9 @@
 #include <fstream>
 #include <queue>
 #include <time.h>
+#include <fmt/core.h>
 
 #include "common.h"
-#include "pattern_eval.h"
 #include "cpu.h"
 
 
@@ -39,35 +39,51 @@ int search(board::Board b) {
     return MOVE_NULL;
 }
 
-void build_book(queue<board::Board> &pos_queue, double time_limit, int depth) {
-    clock_t start = clock();
-
-    CPU cpu{depth, 600, 0, true};   // use given depth, up to 10 minutes
+void build_book(const string &filename, queue<board::Board> &pos_queue, int depth, int plies) {
+    CPU cpu{depth, 600, 0, false};   // use given depth, up to 10 minutes
     CPU test_cpu{10, 1, 0, false};  // depth 10, up to 1 second
-    load_book("book.txt");
-    eval::load_weights("weights.txt");
+    load_book(filename);
 
-    while (!pos_queue.empty() && get_time_since(start) < time_limit) {
-        board::Board curr_pos = pos_queue.front();
-        pos_queue.pop();
+    queue<board::Board> next_queue;
 
-        // Find best move for this position, add to book.
-        cerr << board::to_grid(curr_pos, false);
-        SearchResult sr = cpu.next_move(curr_pos, -1);
+    int plies_done = 0;
+    while (plies_done < plies) {
+        cerr << "Starting ply " << plies_done + 1 << endl;
 
-        // Add to book if it wasn't found in the book.
-        if (sr.nodes != 0) book.push_back({curr_pos, sr.node.best_move});
+        while (pos_queue.size() != 0) {
+            board::Board curr_pos = pos_queue.front();
+            pos_queue.pop();
 
-        // Add all opponent's moves to queue.
-        board::Board next_pos = board::do_move(curr_pos, sr.node.best_move);
-        uint64_t move_mask = board::get_moves(next_pos);
-        while (move_mask != 0ULL) {
-            int m = __builtin_ctzll(move_mask);
-            move_mask &= move_mask - 1;
+            // Find best move for this position, add to book.
+            cerr << board::to_str(curr_pos);
+            SearchResult sr = cpu.next_move(curr_pos, -1);
 
-            // See if a reasonable opponent would make this move
-            SearchResult test_search = test_cpu.next_move(board::do_move(next_pos, m), -1);
-            if (win_prob(test_search.node.score) < 0.57) pos_queue.push(board::do_move(next_pos, m));
+            // Add to book if it wasn't found in the book.
+            if (sr.nodes != 0) book.push_back({curr_pos, sr.node.best_move});
+            fmt::print(stderr, " {} {:.3f}s\n", move_to_notation(sr.node.best_move), sr.time_spent);
+
+            // Add all opponent's moves to queue.
+            board::Board next_pos = board::do_move(curr_pos, sr.node.best_move);
+            uint64_t move_mask = board::get_moves(next_pos);
+            while (move_mask != 0ULL) {
+                int m = __builtin_ctzll(move_mask);
+                move_mask &= move_mask - 1;
+
+                // See if a reasonable opponent would make this move
+                SearchResult test_search = test_cpu.next_move(board::do_move(next_pos, m), -1);
+                if (win_prob(test_search.node.score) < 0.55) next_queue.push(board::do_move(next_pos, m));
+            }
+        }
+
+        cerr << "Writing to " << filename << endl;
+        write_book(filename);
+
+        plies_done++;
+
+        // Copy positions from next_queue into current queue
+        while (next_queue.size() != 0) {
+            pos_queue.push(next_queue.front());
+            next_queue.pop();
         }
     }
 }

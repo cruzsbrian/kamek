@@ -12,33 +12,39 @@ int16_t weights[total_instances];
 int16_t weight_intercept;
 
 
-void pattern_activations(int ret[N_ALL_MASKS], board::Board b) {
-    for (size_t mask_idx = 0; mask_idx < N_ALL_MASKS; mask_idx++) {
-        uint64_t mask = all_masks[mask_idx];
-        uint64_t own_bits = pext(b.own, mask);
-        uint64_t opp_bits = pext(b.opp, mask);
+inline int score_pat(uint64_t own, uint64_t opp, size_t mask_idx) {
+    uint64_t mask = masks[mask_idx];
+    uint64_t own_bits = pext(own, mask);
+    uint64_t opp_bits = pext(opp, mask);
 
-        int instance =  2 * ternary_ones[own_bits] + ternary_ones[opp_bits];
-        ret[mask_idx] = instance;
-    }
+    // Determine index into weights array from pattern and instance
+    uint16_t instance =  2 * ternary_ones[own_bits] + ternary_ones[opp_bits];
+    uint16_t weight_idx = pattern_start[mask_idx] + instance;
+
+    return weights[weight_idx];
 }
-
 
 int score(board::Board b) {
     int score = -weight_intercept;
 
-    for (size_t mask_idx = 0; mask_idx < N_ALL_MASKS; mask_idx++) {
-        // Extract patterns bits from board
-        uint64_t mask = all_masks[mask_idx];
-        uint64_t own_bits = pext(b.own, mask);
-        uint64_t opp_bits = pext(b.opp, mask);
+    // Diagonal-aligned masks
+    for (size_t mask_idx = 0; mask_idx < 4; mask_idx++) {
+        score += score_pat(b.own, b.opp, mask_idx);
+        score += score_pat(flip_adiag(b.own), flip_adiag(b.opp), mask_idx);
+        score += score_pat(flip_vert(b.own), flip_vert(b.opp), mask_idx);
+        score += score_pat(flip_horiz(b.own), flip_horiz(b.opp), mask_idx);
+    }
 
-        // Determine index into weights array from pattern and instance
-        uint16_t instance =  2 * ternary_ones[own_bits] + ternary_ones[opp_bits];
-        uint8_t pattern = mask_base[mask_idx]; 
-        uint16_t weight_idx = pattern_start[pattern] + instance;
+    // Long diagonal
+    score += score_pat(b.own, b.opp, DIAG_8);
+    score += score_pat(flip_vert(b.own), flip_vert(b.opp), DIAG_8);
 
-        score += weights[weight_idx];
+    // Edge-aligned masks
+    for (size_t mask_idx = 5; mask_idx < 9; mask_idx++) {
+        score += score_pat(b.own, b.opp, mask_idx);
+        score += score_pat(flip_vert(b.own), flip_vert(b.opp), mask_idx);
+        score += score_pat(flip_diag(b.own), flip_diag(b.opp), mask_idx);
+        score += score_pat(flip_adiag(b.own), flip_adiag(b.opp), mask_idx);
     }
 
     return score;
@@ -89,17 +95,17 @@ uint64_t flip_horiz(uint64_t x) {
 }
 
 uint64_t flip_diag(uint64_t x) {
-   uint64_t t;
-   const uint64_t k1 = 0x5500550055005500;
-   const uint64_t k2 = 0x3333000033330000;
-   const uint64_t k4 = 0x0f0f0f0f00000000;
-   t  = k4 & (x ^ (x << 28));
-   x ^=       t ^ (t >> 28) ;
-   t  = k2 & (x ^ (x << 14));
-   x ^=       t ^ (t >> 14) ;
-   t  = k1 & (x ^ (x <<  7));
-   x ^=       t ^ (t >>  7) ;
-   return x;
+    uint64_t t;
+    const uint64_t k1 = 0x5500550055005500;
+    const uint64_t k2 = 0x3333000033330000;
+    const uint64_t k4 = 0x0f0f0f0f00000000;
+    t  = k4 & (x ^ (x << 28));
+    x ^=       t ^ (t >> 28) ;
+    t  = k2 & (x ^ (x << 14));
+    x ^=       t ^ (t >> 14) ;
+    t  = k1 & (x ^ (x <<  7));
+    x ^=       t ^ (t >>  7) ;
+    return x;
 }
 
 uint64_t flip_adiag(uint64_t x) {

@@ -12,14 +12,15 @@ struct Options {
     float max_time;
     int eg_depth;
     string weights_file;
+    string book_file;
     int cs2;
 };
 
-const Options default_opts = {30, 15.0, 24, "weights.txt", 0};
+const Options default_opts = {30, 15.0, 24, "weights.txt", "book.txt", 0};
 
 
 void usage(char *argv[]) {
-    cerr << "Usage: " << argv[0] << " [-h] [--cs2] [-d DEPTH] [-t TIME] [-e EG_DEPTH] [-w WEIGHTS]" << endl << endl;
+    cerr << "Usage: " << argv[0] << " [-h] [--cs2] [-d DEPTH] [-t TIME] [-e EG_DEPTH] [-w WEIGHTS] [-b BOOK]" << endl << endl;
     cerr << "\t-h, --help: print this message" << endl << endl;
     cerr << "\t--cs2: play using the CS2 protocol" << endl << endl;
     cerr << "\t-d DEPTH: search to a maximum depth of DEPTH in midgame (int).\t\t"
@@ -30,6 +31,8 @@ void usage(char *argv[]) {
          << "Default: " << default_opts.eg_depth << endl;
     cerr << "\t-w WEIGHTS: load weights from the file at WEIGHTS (str).\t\t"
          << "Default: " << default_opts.weights_file << endl;
+    cerr << "\t-b BOOK: load opening book from the file at BOOK (str).\t\t\t"
+         << "Default: " << default_opts.book_file << endl;
 }
 
 
@@ -46,7 +49,7 @@ Options parse_opts(int argc, char *argv[]) {
     // Use GNU getopt to parse args.
     int optchar;
     int optidx = 0;
-    while ((optchar = getopt_long(argc, argv, "hd:t:e:w:", long_opts, &optidx)) != -1) {
+    while ((optchar = getopt_long(argc, argv, "hd:t:e:w:b:", long_opts, &optidx)) != -1) {
         switch (optchar) {
             case 0:
                 // Case for long_opts. getopt_long will already set the flag, so do nothing.
@@ -70,6 +73,10 @@ Options parse_opts(int argc, char *argv[]) {
             case 'w':
                 cerr << "Using weights file " << optarg << endl;
                 ret.weights_file = optarg;
+                break;
+            case 'b':
+                cerr << "Using book file " << optarg << endl;
+                ret.book_file = optarg;
                 break;
             default:
                 usage(argv);
@@ -125,8 +132,7 @@ bool game_over(board::Board b, bool color) {
 void cli_play(Options opts) {
     board::Board board = board::starting_position();
     eval::load_weights(opts.weights_file);
-    book::load_book("book_black.txt");
-    book::load_book("book_white.txt");
+    book::load_book(opts.book_file);
     CPU cpu{opts.max_depth, opts.max_time, opts.eg_depth, true};
 
     vector<board::Board> history;
@@ -196,8 +202,7 @@ void cs2_play(Options opts, bool bot_color) {
 
     board::Board b = board::starting_position();
     eval::load_weights(opts.weights_file);
-    book::load_book("book_black.txt");
-    book::load_book("book_white.txt");
+    book::load_book(opts.book_file);
     CPU cpu{opts.max_depth, opts.max_time, opts.eg_depth, true};
 
     cout << "Init done.\n";

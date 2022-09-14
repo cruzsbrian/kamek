@@ -51,7 +51,8 @@ SearchResult CPU::next_move(board::Board b, int ms_left) {
                 midgame_time = time_left - eg_time;
             } while ((midgame_time / midgame_moves) < eg_time / 3 && eg_empties >= 0);
 
-            time_budget = max(min(midgame_time / midgame_moves, max_time), 0.001);
+            // Weight the current move 1.5x for calculation to try to counteract unused time piling up at the end.
+            time_budget = max(min(midgame_time * 2.0 / (midgame_moves + 1), max_time), 0.001);
         }
 
         if (print_search_info) fmt::print(stderr, "{:.1f}s / {:.1f}s left\n", time_budget, time_left);
@@ -113,7 +114,7 @@ SearchResult CPU::search(board::Board b, int empties, double time_budget, bool t
 
     // If search returns a guaranteed win/loss, check with no forward pruning.
     if (mid_result.score == INT_MAX || mid_result.score == -INT_MAX) {
-        if (print_search_info) fmt::print("re-search without forward pruning\n");
+        if (print_search_info) fmt::print(stderr, "re-search without forward pruning\n");
         mid_result = midgame_search(b, empties, time_budget, &nodes, false);
     }
 
@@ -232,7 +233,7 @@ SearchNode CPU::endgame_search(board::Board b, int empties, double time_limit, l
             if (wld) {
                 if (result.score > 0) fmt::print(stderr, "{} win   {:.3f}s\n", move_to_notation(result.best_move), time_spent);
                 else if (result.score < 0) fmt::print(stderr, "loss     {:.3f}s\n", time_spent);
-                else fmt::print(stderr, "draw     {:.3f}s\n", time_spent);
+                else fmt::print(stderr, "{} draw  {:.3f}s\n", move_to_notation(result.best_move), time_spent);
             } else {
                 fmt::print(stderr, "{} {:+3}   {:.3f}s\n", move_to_notation(result.best_move), result.score, time_spent);
             }
